@@ -1,0 +1,16 @@
+
+
+
+				CONFIGURACIONES POSIBLES EN ARCHIVO APPLICATION.PROPERTIES
+
+	Configuracion de base de datos:
+		spring.datasource.url=jdbc:mysql://localhost/(nombreDatabase)
+		spring.datasource.username=(usuario)
+		spring.datasource.password=(contraseña)
+		spring.datasource.driver-class-name=(driver, ej. com.mysql.cj.jdbc.Driver)
+		spring.jpa.database-platform=(Dialecto, ej. org.hibernate.dialect.MySQL57Dialect)
+		spring.jpa.hibernate.ddl-auto=(crear/crear-eliminar/actualizar tablas automaticamente dependiendo de las clases de entidad de la aplicacion)
+
+		spring.jackson.time.zone = (zona horaria): Se utiliza para configurar la zona horaria que se este utilizando
+		spring.jackson.locale = (Localidad): Se utiliza para configurar el locale
+		

@@ -1,0 +1,129 @@
+
+
+
+			DESPLIEGUE DE SERVIDORES EN PRODUCCION
+
+	La documentacion oficial de angular para el despliegue de la apliacion es la siguiente
+	https://angular.io/guide/deployment
+
+
+	 		PREPARACIONES EN EL ARCHIVO ANGULAR
+
+
+	 	EN CLASES COMPONENT.TS
+
+	1. Se cambia la visibilidad de los atributos privados que sean utilizados en la vista
+		Como las instancias a clases AuthService, ModalService, etc
+		Se pueden tener atributos en el contructor o fuera de este, cambiar los que se necesiten
+		Se pueden identificar estos atributos viendo en las vistas si se utilizan ya sea con un {{}} o ngModel
+
+
+			CONTRUIR LA APLICACION GENERANDO LOS ARCHIVOS NECESARIOS
+
+	2. En la terminal en la carpeta del proyecto(se puede utilizar la terminal de visualStudio) se ejecuta el comando ng build --prod
+	3. Revisar la carpte dist que se genero en la carpta del proyecto, aqui se encontraran los archivos necesarios
+
+
+
+			CAMBIOS EN LOS ARCHIVOS GENERADOS DE PRODUCCION
+		Se tiene que cambiar algunas cosas de los archivos de acuerdo al servidor que se este utilizando
+		Ya sea apache, ruby, IIS, Firabese, etc. en la documentacion viene todo eso
+
+	4. En visualStudio se abre la carpeta de los archivos generados
+
+
+///////////////////////////////////		PARA NODEJS Y EXPRESS		////////////////////////////////////////////////////////////////////
+	N5. Se crea una carpeta nueva la cual se puede llamar como se quiera puede ser el nombre de la aplicacion
+	N6. Se guarda dentro todos los archivos y carpetas de la aplicacion, menos dist obviamente
+	N7. En la terminal en la carpeta dist se ejecuta el comando: npm init
+	N8. Se hace una serie de preguntas como el nombre del package, la version, descripcion, el punto de entrada (cambiar a server.js), se da enter a todo lo demas
+	N9. Se ejecuta el comando: npm install express --save
+	N10. Revisar el archivo package.json, ahi se encuentran los datos de la aplicacion, se pueden modificar como el name del package, version, etc
+	N11. Se crea el archivo server.js dentro de la carpeta dist
+	N12. Se coloca el siguiente codigo dentro de este archivo
+		let express = require('express');
+		let path = require('path');
+		let app = express();
+		let port = 8089;
+		//Aqui se configura el contenido estatico, se cambia clientes-app por el nombre de la carpeta que contiene nuestros archivos
+		app.use(express.static('clientes-app'));
+		app.get('*', (req, res, next) =>{
+			res.sendFile(path.resolve('clientes-app/index.html'));
+		});
+		app.listen(port, ()=>{
+			console.log('El servidor express se ha iniciado en el puerto ' + port);
+		})
+	N13. En la terminal se ejecuta el comando: node .\serve.js
+		El backend tambien tiene que ya estar arriba
+
+--------------------------------------------------------------------------------------------------------------------------------------
+
+
+/////////////////////////////////////	PARA APACHE 	/////////////////////////////////////////////////////////////////////////////////////
+
+	A5. Se crea el archivo .htaccess dentro de la carpeta dist
+	A6. Se pega el siguiente codigo dentro del archivo (Este esta en la documentacion)
+		RewriteEngine On 
+  			# If an existing asset or directory is requested go to it as it 
+  		is 
+		  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -f [OR] 
+		  RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} -d 
+		  RewriteRule ^ - [L] 
+ 
+		  # If the requested resource doesn't exist, use index.html 
+		  RewriteRule ^ /index.html
+	A7. Se hacen las siguientes modificaciones 
+			El REQUESTO_FILENAME se hace para que se pueda refrescar la pagina sin quenos de un error 404)
+			Se especifica el directorio base en donde estara nuestra pagina colocando antes de index.html el nombre del directorio
+
+		RewriteEngine On 
+  			# If an existing asset or directory is requested go to it as it 
+  		is 
+		  RewriteCond %{REQUEST_FILENAME} -f [OR] 
+		  RewriteCond %{REQUEST_FILENAME} -d 
+		  RewriteRule ^ - [L] 
+ 
+		  # If the requested resource doesn't exist, use index.html 
+		  RewriteRule ^ /clientes-app/index.html
+
+	A8. Se especifica el directorio base tambien en el archivo index.html
+		En la etiqueta <base> se coloca el directorio
+			ej. <base href = "/clientes-app/">
+
+
+						INSTALACION DE APACHE HTTP SERVER (Para forma local)
+		Esto se hace si no se tiene instalado, apache es un tipo de servidor, es el mas utilizado, no es un hosting
+		solo nos sirive para administrar los recursos estaticos de la aplicacion (creo, investigar bien)
+		Se puede instalar en windows y linux, para mac hay que investigar un poquito, ver video 196
+
+	A9. Ir a la pagina de apache http, en dowloads y binarios y wind32: https://dlcdn.apache.org/httpd/binaries/win32/
+	A10.Se da click en ApacheHaus o Apache Lounge (cualquiera vale)
+	A11. Se descarga la version que se quiera, 32 o 64
+	A12. Se extraen los archivos del zip y se corta la carpeta Apache24, este se mueve a la carpeta C:\ (osea en la raiz)
+	A13. Abrimos el archivo httpd.conf en la carpeta de conf
+	A14. Con ayuda del block de notas buscamos la cadena mod_rewrite, Se tiene que descomentar esta linea, osea se borra el #
+	A15. Nos vamos a la parte de <Directory "${SRVROOT}/htdocs">, y donde dice AllowOverride None, se cambia None por All
+
+
+			PUBLICACION DE LA APLICACION ANGULAR (forma local)
+
+	A16. Se copia la carpeta dist de nuestra apliacion angular y se pegan en la carpeta de apache llamada htdocs
+	A17. Se cambia el nombre de la carpeta por el que se coloco como fichero en el archivo index de angular (paso 8)
+	A18. En la terminal nos dirigimos a la carpeta de apache24 y bin: cd C:\Apache24\bin
+	A19. Ejecutamos el siguiente comando: .\httpd.exe (El backend tambien tiene que ya estar levantado)
+--------------------------------------------------------------------------------------------------------------------------------------
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+

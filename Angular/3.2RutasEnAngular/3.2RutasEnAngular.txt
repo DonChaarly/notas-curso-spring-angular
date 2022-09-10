@@ -1,0 +1,51 @@
+
+
+
+
+			RUTAS EN ANGULAR
+	Se puede una lista de componentes que se van a mostrar al mandarse una ruta en especifico
+
+
+
+		EN ARCHIVO APP.MDOLE.TS O AP.ROUTING.MODULE.TS
+
+	1. Se importa los modulos de RouterModule y Routes
+		import { RouterModule, Routes} from '@angular/router';
+	2. Se crea la constante Routes y se especifican las rutas que se utilizaran
+		dentro de las rutas se coloca un path: el cual indicara la ruta
+		Seguido de un component: elcual indicara el componente a mostrar cuando se llame a la ruta
+		Se puede colocar paths hijos a un path ya establecido
+		Esto debido a que se puede colocar un segundo path diferente, se coloca el componente que le corresponda
+		ej.
+		const routes: Routes = [
+		  //127 Se agregan nuevas rutas, la utl sin nada sera la url por default
+		  //127 Se especifica el path y el componente que se va a llamar
+		  {path: "", component: PersonasComponent},
+		  //127 Si se llama el path de personas se llama el componente de PersonasComponent
+		  //127 Pero si tambien se incluye el id quiere decir que queremos agregar o modificar la persona, por lo tanto tendremos rutas hijas del path
+		  {path: "personas", component: PersonasComponent, children:[
+		    {path: "agregar", component: FormularioComponent},
+		    {path: ":idPersona", component: FormularioComponent}
+		  ]}
+		];
+	3. En los imports se agrega el module de RouterModule.forRoot(routes)
+		ej. 
+		imports: [
+			RouterModules.forRoot(routes)
+		]
+
+
+		EN LAS VISTAS EN LOS ARCHIVO COMPONENT.HTML
+	4. Se coloca la directia <router-outlet></router-outlet>
+		Esta directiva es la que mostrara el elemento que toque cargar de acuerdo a la ruta
+	5. Se coloca la directiva [routerLink] = "['/(ruta)']" a los botones o links
+		En las vistas en donde tengamos los botones o link que se encargaran de redirigir a las otras vistas
+		como atributo de la etiqueta se coloca routerLink y la ruta que se configuro en el app.module.ts
+		Tambien se puede colocar un parametro variable a la ruta colocando [routerLink] = "['/(ruta)', (parametro)]"
+	6. Se coloca una instancia de la clase Router en el constructor del component.ts
+		Se crea un objeto router en el component.ts para desde el codigo redirigir a otro componente con una ruta
+		ej. this.router.navigate(["./personas/agregar"]);
+
+
+
+

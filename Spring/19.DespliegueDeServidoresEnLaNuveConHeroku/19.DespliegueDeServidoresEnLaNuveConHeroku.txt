@@ -1,0 +1,80 @@
+
+
+
+			HEROKU
+
+	Heroku es una plataforma de servicios que sirve para poder publicar el proyecto en la nube, parecido a un hosting pero con arquitectura mas robusta y segura, provee varios pugglings, varios buildpacks para soportar diferentes lenguajes, diferentes frameworks y nos permite agregar herramientas
+	como MySql, postgrade, mongoDB etc.
+
+	Heroku es gratuito pero para aplicaciones pequeñas, cuando son aplicaciones mas robustas se entra con una cuenta de pago
+	Heroku esta pensado para desplegar aplicaciones mas por el lado del servidor, osea un backend
+	Pero para frontEnd heroku esta sobredimensionado, es como matar una mosca con una escopeta
+
+
+		CREACION DE APLICACION HEROKU
+
+	1. Se tiene que crear una cuenta en Heroku
+		En esta parte se debe seleccionar el lenguaje principal
+		Se pueden agregar mas lenguajes en el buildPack
+	2. Se ingresa a la cuenta
+	3. Se da click en Create New App
+	4. Se nombra el proyecto y se elige la region
+	5. Se elige el metodo de despliegue elegiremos HerokuGit (realmente no se hace nada en este punto no toques nada prro)
+		Se tiene Heroku git, gitHub, DropBox y Container Registry
+	6. Se da click en Download and install Heroku CLI 
+	7. Se descarga e instala
+	8. En nuestra cuenta de heroku nos vamos a settings y revisamos que todo este en orden
+		En esta parte se peude agregar algun otro lenjuage en AddBuildPack	
+		Tambien se puede agregar un dominio
+		Se puede activar el modo mantenimiento, con esto la aplicacion no estar disponible
+		En esta parte tamien se puede eliminar la aplicacion
+	9. Nos vamos a la pestana de Resources
+		En esta parte tenemos los Add-ons los cuales son como modulos
+		Como MySQL pero para esto se tiene que configurar una tarjeta de credito, aunque es gratis es necesario esto
+
+
+		DESPLIEGUE DE APLICACION EN HEROKU
+
+		EN CUENTA HEROKU
+	10. Nos vamos a la pestaña de overview
+	11. Damos click en Configure Add-ons
+	12. Agregamos JawsDG MySQL la version gratuita (se tiene que tener configurada un tarjeta para esto )
+
+		EN PROYECTO BACKEND EN ECLIPSE
+	13. En archivo pom.xml se cambia la version de java por la 1.8
+	14. Damos click derecho a la carpeta principal del proyecto -> maven -> Update Poject y damos click en ok
+	15. En application-properties configuramos el puertos
+		Agregamos la siguiente linea: server.port=${PORT:8080}
+
+		EN EL SIMBOLO DEL SISTEMA
+	16. Nos vamos a la carpeta raiz del proyecto con comando cd
+	17. Iniciamos sesion con el comando: heroku login (se tiene que tener inciada sesion en el navegador tambien)
+	18. Damos enter y damos log in en la pestana que nos abrio
+	19. En la terminal colocamos el comando para inicializar un repositorio en git: git init 
+	20. Enlazamos el proyecto backend con la aplicacion que creamos en heroku con el comando: heroku git:remote -a (nombreDeAplicacionEnHeroku)
+	21. colocamos comando para instalar el pluggin de java para hacer el deploy que por debajo ejecutar el comando java -jar: heroku plugins:install java
+	22. Colocamos el comando para configurar MySQL: heroku addons:create jawsdb
+	23. Colocamos el comando para obtener los datos para conectarnos a la base de datos: heroku config:get JAWSDB_URL (esta ultima paalabra sale enla terminal)
+	24. Nos saldra una cadena con los datos para conectarnos a mysql
+		sera algo asi: mysql://j55mfzcvvgdssa:mkeal2dsfasdf@s32dsag35asdg.ccagagjaodka.us-east2.rds.amazonaws.com:3306/yzaaa6gsall1uc
+		De los // hasta :   eso sera el usuario osea: j55mfzcvvgdssa
+		De los :  hasta @   eso sera el password osea: mkeal2dsfasdf
+		De el  @  hasta :   eso sera el nombre del servidor osea: s32dsag35asdg.ccagagjaodka.us-east2.rds.amazonaws.com
+		De el  :  hasta /   eso sera el puerto osea: 3306 (este es el puerto por defecto)
+		De el  /  hasta     eso sera el nombre de la base de datos
+
+
+		EN ARCHIVO APPLICATION.PROPERTIES
+	25. Colocamos las configuraciones para la conexion de bases de datos segun la cadena que recibimos en el punto anterior
+		En spring.datasource.username=(usuario, ej. j55mfzcvvgdssa)
+		En spring.datasource.password=(password, ej. mkeal2dsfasdf)
+		En spring.datasource.url=jdbc:mysql://(nombreDelServidor):(puerto)/(nombreDeBaseDeDatos)?useSSL=false
+		En spring.jpa.database-platform=org.hibernate.dialect.MySQL57Dialect
+
+
+		EN EL SIMBOLO DEL SISTEMA
+	26. Creamos el jar con el comando: .\mvnw clean package
+	27. Realizamos el despliegue en heroku con el comando: heroku jar:deploy .\target\(ubicacionDeljar, mas bien el nombre)
+	29. Una vez terminado el proceso nos marcar la ruta URL en donde estara lanzado nuestro proyecto, casi hasta abajo 
+	30. (OPCIONAL)Para ver la consola en la terminal se coloca el comando: heroku logs --tail
+

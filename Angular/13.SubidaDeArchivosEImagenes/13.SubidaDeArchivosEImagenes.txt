@@ -1,0 +1,106 @@
+
+
+
+		SUBIDA DE IMAGENES POR PARTE DEL FRONTEND
+
+		EN CLASE MODELO DE LA ENTIDAD
+	1. Se agrega un atributo al que se le asignara la foto o archivo
+
+		EN CLASE SERVICE
+	2. Se crea un metodo que se encargara de manejar la subida de archivos
+		Se le coloca como parametros un parmetro de tipo File llamado archivo y un parametro que se encargue del id
+	3. Dentro del metodo se crea una variable de tipo FormData
+		ej. let formData = new FormData();
+	4. Se utiliza el metodo append para adjuntar el archivo y el id al formData
+		ej. formData.append("archivo", archivo);
+			formData.append("id", id);
+	5. Se hace el return del metodo como un metodo post agregando la url que corresponde
+		ej. return this.http.post('${this.url}/upload', formData)
+	6. Se agrega operadores como map y cathError con el metodo pipe()
+		Ya que se esta obitniendo un Map desde el backend se tiene que convertir con el map a tipo Cliente
+		ej. ..formData).pipe(
+			map( (response: any) => response.cliente as Cliente),
+		)
+
+
+		EN CLASE COMPONENT.TS
+	7. Creamos un atributo de la clase al que se le va asignar el archivo, de tipo File
+	8. Se crea un metodo el cual tiene que recibir como parametro un event (este evento lo manda la vista, sera el que activara al metodo)
+		Este metodo se encargar de cargar la foto en la clase
+		ej. seleccionarFoto(event){
+	9. al atributo de archivo creado en la clase se le asigna el archivo que tendra el evento
+		ej. this.fotoSeleccionada = event.target.files[0];
+	10. Preguntamos el tipo de archivo que se esta enviando con el atributo .type
+		type en el caso de imagenes es image/jpg, image/png
+		en el caso de musica audio/mp3, audio/mp4
+		en el caso de archivos doc es application/msword, etc
+		ej. if(this.fotoSeleccionada.type.indexOf('image') < 0){
+			console.log("El tipo de archivo no es correcto")
+		}else{..
+
+	10. Creamos un metodo el cual se encargara de subir la foto a la clase service
+		ej. subirFoto(){
+			this.clienteService.subirFoto(this.fotoSeleccionada, this.cliente.id)
+		}
+	11. Verificamos que se haya seleccionado algun archivo con un if
+		ej. if(!this.fotoSeleccionada){
+			consol.log("Error, no se selecciono ningun archivo")
+		} else{...
+	12. Nos suscribimos al metodo de la clase service para ejecutar algun otro codigo
+		como para actualizar al informacion del cliente
+		ej. this.cliente.id).suscribe( cliente =>{
+			this.cliente = cliente;
+		})
+	13. Se crea un atributo de tipo EventEmiter 
+		ej. private notificarUpload = new EventEmitter<any>();
+	14. En el metodo que se encarga de cargar la foto al metodo service dentro del suscribe se utiliza el objeto eventEmitter
+		Se utiliza el evento emit para ejecutar algun codigo
+		como actualizar el cliente 
+		ej. this.clienteService.subirFoto(....).suscribe(event =>{
+			this.notificarUpload.emit(this.cliente);
+		})
+	15. En el onInit() nos suscribimos al atributo eventEmitter para ejecutar algun codigo
+		Como actualizar la informacion de cliente
+		ej. this.notificarUpload.suscribe(cliente =>{
+			this.clientes = this.clientes.map(clienteOriginal =>{
+				if (cliente.id == clienteOriginal.id){
+					clienteOriginal.foto = cliente.foto;
+				}
+				return clienteOriginal;
+			})
+		})
+
+
+
+
+
+			IMPLEMENTACION DE BARRA DE PROGRESO AL SUBIR ARCHIVO (OPCIONAL)
+
+		EN CLASE SERVICE
+	1. Se crea una constante de tipo HttpRequest con la cual haremos nuestra peticiones get, post, etc.
+		Se le coloca como argumentos el tipo de metodo, la url y el formData
+		El reportProgress es el que nos servira para implementar la barra de progreso
+		ej. 
+			const req = new HttpRequest('POST', `${this.url}/upload`, fromData, {
+				reportProgress: true
+			});
+	2. Se cambiar el tipo de retorno del metodo de Observable<Cliente> a Observable<HttpEvent<{}>>
+	3. en la llamada http se utiliza el metodo request pasando el objeto request
+		ej. return this.http.request(req);
+	4. Se quita el metodo pipe, ya no lo necesitamos, junto con todos los operadores
+
+		EN CLASE COMPONENT.TS
+	5. Se crea un atributo de la clase el cual se encarga del progreso
+		ej. private progreso: number = 0;
+	6. En el suscribe del metodo service para subir el archivo, se cambia response por event (no es necesario)
+		El metodo ahora retorna un evento en vez de la clase entidad
+	7. Se pregunta si el tipo de evento es un uploadProgress
+		ej. if(event.type === HttpEventType.UploadProgress){...
+	8. Se calcula el preogreso con la lireria Math redondeando las cantidades y se lo asignamos al atributo progreso
+		this.progreso = Math.round((event.loaded/event.total)*100);
+	9. En el else se pregunta si el tipo de evento es response
+		ej. else if(event.type === HttpEventType.Response){...
+	10. Guardamos la respuesta y la asignamos al atributo cliente
+		ej. let response: any = event.body;
+		this.cliente = response.cliente as Cliente;
+	11. En el metodo en el que se selecciona una nueva foto se resetea el atributo progreso a 0

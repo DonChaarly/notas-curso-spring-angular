@@ -1,0 +1,419 @@
+
+
+			ERRORES CAUSADOS POR NO TENER AUTORIZACION EN EL FRONTEND
+	Cuando no se tiene acceso a ciertos recuros del backend se presentan los errores 401 y 403
+	Formas de manejar los errores
+		Cada vez que surja un error de estos se puede redirigir a la pagina en la que se hace el login
+		GUARD: Estos son objetos que permiten interceptar una ruta, cada que se ejeucta una ruta se realiza algun tipo
+				de validacion
+	Lo ideal es tener ambas formas
+
+			OBTENER UN TOKEN JWT
+	Para esto se debe autenticar el cliente de acuedo al nombre del cliente y constrasena que se especifico en el backend
+	Ya que se ha autenticado el cliente se puede pasar en cabeceras el nombre del usuario y su contrasena
+	con eso se obtendra el token
+
+
+			COMPONENTE LOGIN
+	1	SE CREA UN COMPONENTE LOGIN
+
+
+		EN APP.MODULE.TS o APP.ROUTING.MODULE
+	2. Se agrega una ruta para mapear al componente de login en la parte de routes
+
+		EN LOGIN.COMPONENT.HTML
+	3. Se crea la vista del login
+	4. En el form del login se puede marcar el tipo de metodo POST pero esto no es necesario ya que esto lo trabaja la clase de service con HttpClient
+
+
+
+
+			CLASE USUARIO
+	7.	SE CREA LA CLASE USUARIO
+		Se puede crear manualmente o con el comando ng g class (nombreClase)
+
+
+		EN COMPONENT.HTML DEL LOGIN
+	8. Se mapean los campos input con los datos que se quieran usando ngModel
+		ejemplo:
+			[(ngModel)]="usuario.username"
+
+		EN CLASE COMPONENT.TS DE LOGIN
+	9. Se crea una variable de tipo Usuario y se inicializa dentro del constructor
+	10. Se crea una variable Router en el constructor
+	11. Se crea un metodo llamado login() 
+		En este metodo se valida que los campos no sean vacios
+		login(): void{
+			console.log(this.usuario);
+			if(this.usuario.username == null || this.usuario.password == null){
+
+			}
+
+		}
+
+			CLASE SERVICIO AUTH
+	12.	SE CREA CLASE DE SERVICIO AUTH
+		Se puede crear manualmente o con el comando ng g s (nombreClase)
+	13. Se crea una variable HttpCliente en el constructor
+	14. Se crea el metodo login(usuario: Usuario): Observable<any>{}
+		ej. 
+		login(usuario: Usuario): Observable<any>{
+		}
+	15. Dentro del metodo login se coloca el siguiente codigo
+			//El url debe ser oauth/token para pedir la autenticacion
+			const urlEndpoint = 'http://localhost:8080/oauth/token';
+
+			//Las credenciales seran el nombre y contrasena para el cliente frontend especificados en el backend en la clase ResourceServerConfig
+			//Estas credenciales se encriptan en base 64 con ayuda del metodo btoa()
+			const credenciales = btoa('angularapp' + ':' + '12345');
+
+			//Se deben establecer las cabeceras en el cual se especifica el tipo de contenido, y el tipo de autorizacion junto con las credenciales
+			const httpHeaders = new HttpHeaders({'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + credenciales});
+
+			//Se crea una variable params en el que se especifica el tipo de autenticacion en este caso password el cual se especifica tambien en el backend
+			//Se pasa como parametro el nombre del usuario y la contrasena
+			let params = new URLSearchParams();
+			params.set('grant_type', 'password');
+			params.set('username', usuario.username);
+			params.set('password', usuario.password);
+
+			//Finalmente se hace la llamada post con el objeto HttpClient pasando los parametros necesarios
+			return this.http.post<any>(urlEndpoint, params.toString(), {headers: httpHeaders});
+	16. Se agregan lo atributos usuario y token privados a la clase
+			ej. 
+				private _usuario: Usuario;
+				private _token: string;
+	17. Se crean los metodos get y set para los atributos privados
+			Estos seran un poco especificos ya que se determina si el usuario no es null
+			y si es null se busca dentro del session storage a ver si se encuentra definido dentro
+			ej. 
+			public get usuario(): Usuario{
+				if(this._usuario != null){
+					return this._usuario
+				}else if(this._usuario == null && sessionStorage.getItem('usuario') != null){
+					this._usuario = JSON.parse(sessionStorage.getItem('usuario')) as Usuario;
+					return this._usuario;
+				}
+				return new Usuario();
+			}
+			public get token(): string{
+				if(this._token != null){
+					return this._token
+				}else if(this._token == null && sessionStorage.getItem('token') != null){
+					this._token = sessionStorage.getItem('token'));
+					return this._token;
+				}
+				return null;
+			}
+	18. Se crea unmetodo llamado obtenerDatosToke()
+		Este metodo sacara los datos que necesitamos del token
+		ej.
+			obtenerDatosToken(accessToken:string):any{
+				if(accessToken != null){
+					//Para decodificar y convertir a objeto JSON el token se hace lo siguiente
+					return JSON.parse(atob(accessToken.split(".")[1]));
+				}
+				return null;
+			}
+
+	19. Se crea un metodo llamado guardarUsuario()
+			guardarUsuario(accessToken: String): void{
+
+			}
+	20. Se agrega el siguiente codigo al metodo
+
+			let payload = this.obtenerDatosToken(accessToken);
+			this._usuario = new Usuario();
+			this._usuario.nombre = payload.nombre;
+			this._usuario.apellido = payload.apellido;
+			this._usuario.emial = payload.emial;
+			this._usuario.username = payload.user_name;
+			this._usuario.roles = payload.authorities;
+
+			//El sessionStorage nos permite guardar datos en la sesion del navegador
+			sessionStorage.setItem('usuario', JSON.stringify.(this._usuario)
+	21. Se crea un metodo llamado guardarToken()
+			guardarToken(accessToken: string):void{
+				this._token = accesToken;
+				sessionStorage.setItem('token', accessToken);
+			}
+
+	22. Se crea un metodo llamado isAuthenticated(): boolean{}
+		Este metodo puede ser utilizado en distintas clases en donde se necesite saber si el usuario esta autenticado
+			isAuthenticated(): boolean{
+				let payload = this.obtenerDatosToken(this.token);
+				if (payload != null && payload.user_name && payload.user_name.length>0){
+					return true;
+				}
+				return false;
+			}			
+	23. Se crea un metodo llamado logout(){}
+		Este metodo solamente dejara el token y el usuario en null y los eliminara del sessionStorage
+			logout():void{
+				this._token = null;
+				this._usuario = null;
+				//sessinStorage.clear();
+				sessionStorage.removeItem('token');
+				sessionStorage.removeItem('usuario');
+				this.router.navigate(['/login']);
+			}
+	24. Se crea un metodo llamado hasRole(role: string):boolean{}
+		hasRole(role: string):boolean{
+			if(this.usuario.roles.includes(role)){
+				return true;
+			}
+			return false;
+		}
+
+			CLASE COMPONENT.TS DE LOGIN
+	24. Se crea una variable AuthService en el constructor
+	25. Dentro del metodo login() se agrega el siguiente codigo
+		Se implementa el metodo login del authService en el cual nos suscribimos para realizar un codigo
+		el parametro response contendra todos los datos del usuario, como el token, la informacion adicional, etc
+		con response.access_token.split(".")[1], se obtiene los datos del token que nos interesan como el username, roles, informacino adicional, etc.
+		como por ejemplo redirigir a una siguiente ventan en caso de que se haya autenticado con exito
+		o como por ejemplo mandar un mensaje
+		Tambien con el suscribe se puede colocar el parametro err el cual nos mostrara los errores que se hayan mandando
+		como un error 400 el cual es a casua de malas credenciales
+
+		this.authService.login(this.usuario).suscribe(response =>{
+			//el objeto response contendra el token JWT que se esta recibiendo
+			console.log(response);
+
+			//Para decodificar y convertir a objeto JSON el token se hace lo siguiente
+			//let payload = JSON.parse.atob(response.acces_token.split(".")[1]);
+
+			//Se puede acceder a los como username o roles de la siguiente forma
+			//let username = payload.user_name;
+
+
+			//Se utilizan los metodos guardarUsuario y guardarToken del authService
+			this.authService.guardarUsuario(response.access_token);
+			this.authService.guardarToken(response.access_token);
+
+			//Se crea una variabel Usuario con ayuda del metodo getUsuario de la clase authService
+			let usuario = this.authService.usuario;
+
+			
+			this.router.navigate(['/clientes']);
+		},err =>{
+			if(err.status == 400){
+			consol.log("Error login, usurio o clave incorrecta")
+			}	
+		});
+	26. En el metodo ngOnInit() se agrega el siguiente codigo
+		Este codigo se ejecuta para que no se tenga que hacer el login a cada rato en caso de que ya se haya hecho una vez
+			if(this.authService.isAutenticated()){
+				//Se redirige a la pagina que se quiera, tambien se puede ejecutar algun otros codigo como enviar un mensaje
+				this.router.navigate(['/clientes']);
+			}
+
+		CLASE INTERCEPTORS TOKEN
+	27. Se crea la clase interceptora llamda Token.interceptor
+		Se puede utilizar el comando ng g class (ejemplo)/(deRuta)/(dondeGuardar)/(nombreClase)
+		Esta clase se encargara de interceptar las llamadas HttpClient para de esta forma agregar cabeceras a las peticiones
+	28. De la documentacion de angular se copio y pego el siguiente codigo de ejemplo de como implementar una clase interceptora
+		Se cambio el nombre de la clase por el que se tiene
+
+		import { Injectable } from '@angular/core';
+		import {
+		  HttpEvent, HttpInterceptor, HttpHandler, HttpRequest
+		} from '@angular/common/http';
+
+		import { Observable } from 'rxjs';
+
+		/** Pass untouched request through to the next request handler. */
+		@Injectable()
+		export class TokenInterceptor implements HttpInterceptor {
+
+		  intercept(req: HttpRequest<any>, next: HttpHandler):
+		    Observable<HttpEvent<any>> {
+		    return next.handle(req);
+		  }
+		}
+	29. Se agrega el metodo contructoro y se inyectan las variables AuthService 
+		ej.
+		constructor (private authService: AuthService){}
+	29. En el metodo intercept se agrega el siguiente codigo dentro del Observable<HttpEvent<any>>{}
+			let token = this.authService.token;
+			if(token != null){
+				const authReq = req.clone({
+					headers: req.headers.set('Authorization', 'Bearer ' + token)
+				});
+				return next.handle(authReq);
+			}
+
+		CLASE INTERCEPTORS AUTH
+	30. Se crea una nueva clase interceptora llamada auth
+		Tambien se puede copiar y pegar la clase token que ya se tenia dejando lo basico de la clase Interceptora junto con el contructor
+		Se tiene que renombrar el nombre de la clase obviamente
+	31. Dentro del metodo Intercept en el return next.handle(req) se agrega el metodo pipe, para agregar el operador catchError
+		ej.
+		return next.handle(req).pipe(
+			catchError(e={
+
+			})
+		);
+	32. Se agrega el siguiente codigo al catchError
+			if(e.status == 401){											
+				if(this.authService.isAuthenticated()){																					
+					this.authService.logout();																								
+				}																																
+				this.router.navigate(['/login'])																											
+			}																															
+			if(e.status == 403){																											
+				this.router.navigate(['/clientes'])
+			}																																	
+			return throwError(e);
+
+		EN CLASE APP.MODULE.TS
+	30. Se registran los interceptores en la parte de providers
+		ej.
+			providers: [{provide: HTTP_INTERCEPTORS, useClass: TokenInterceptor, multi: true},
+						{provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true}],
+
+
+
+	--------------------------------------------------------------------------------------------------------------------------------
+	| 			EN CLASES SERVICE DE LLAMADAS httpClient  																			|
+	|	(OTRA FORMA MENOS PRACTICA DE AGREGAR CABECERAS A LAS PETICIONES SIN INTERCEPTORES)											|
+	|																																|
+	|??. Se agrega una variabel AuthService en el constructor																		|
+	|??. Agregamos el metodo private agregarAuthorizationHeader(){}																	|
+	|??. Se agrega el siguiente codigo al metodo 																					|
+	|																																|
+	|	let token = this.authService.token;																							|
+	|	if(token != null){																											|
+	|		return this.httpHeaders.append('Authorization', 'Bearer ' + token);														|
+	|	}																															|
+	|	return this.httpHeaders;																									|
+	|																																|
+	|??. Se implementa el metodo agregarAuthorizationHeader() a cada metodo que haga llamada http y que lo requiera					|
+	|	Algunos metodos no sera necesario colocar esto ya que algunos son publicos y no necesian autorizacion						|
+	|	Este metodo se implementa en el metodo http.get,post,delete, etc dentro como un parametros									|		
+	|	ej. 																														|
+	|		return this.http.get<Region[]>(this.urlEndPoint + '/regiones', {headers: this.agregarAuthorizationHeader()}).pipe(...)	|	
+	|																																|
+	|																																|
+	|																																|
+	|	(OTRA FORMA MENOS PRACTICA DE MANEJAR ERRORES DE AUTENTICACION SIN INTERCEPTORES)											|	
+	|??. Se crea un metodo llamado isNoAutorizado() que retorne un boolean 															|	
+	|	Este metodo se encarga de preguntar si se ha ocurrido un error 401, o 403 y en este caso se redirige a la pagina de login	|	
+	|	ej.																															|	
+	|	private isNoAutorizado(e): boolean{																							|	
+	|		if(e.status == 401){																									|
+	|			if(this.authService.isAuthenticated()){																				|	
+	|				this.authService.logout();																						|		
+	|			}																													|			
+	|			this.router.navigate(['/login'])																					|	
+	|			return true;																										|	
+	|		}																														|	
+	|		if(e.status == 403){																									|		
+	|			this.router.navigate(['/clientes'])																					|			
+	|			return true;																										|		
+	|		}																														|			
+	|		return false;																											|		
+	|	}																															|		
+	|??. Se implementa este metodo en todos los demas metodos de la clase service que llamen al backend								|			
+	|	Este metodo se coloca dentro del metodo pipe con el operador catchError														|	
+	|	ej1.																														|	
+	|	getRegiones(): Observable<Region[]>{																						|	
+	|		return.....).pipe(																										|	
+	|			catchError(e =>{																									|			
+	|				this.isNoAutorizado(e);																							|	
+	|				return throwError(e);																							|	
+	|			})																													|	
+	|		)																														|		
+	|	}																															|	
+	|	ej2.																														|	
+	|	create(): Observable<Region[]>{																								|	
+	|		return.....).pipe(																										|		
+	|			catchError(e =>{																									|		
+	|				if(this.isNoAutorizado(e)){																						|	
+	|					return throwError(e);																						|		
+	|				}																												|	
+	|				return throwError(e);																							|		
+	|			})																													|	
+	|		)																														|			
+	|	}																															|	
+	|																																|		
+	---------------------------------------------------------------------------------------------------------------------------------
+
+
+		EN CLASES COMPONENT.TS
+	??. Se crea una variable de tipo AuthService para poder llamar a sus metodos
+		Esto para poder llamar al metodo authService.hasRole('') dentro de las vistas de los componentes
+		y de esta forma mostrar o no algunos botones o partes de las paginas
+		ej.
+			<div *ngIf="authService.hasRole('ROLE_ADMIN')">
+
+
+		CLASE GUARD AUTH
+	33. Se crea clase guard llamada auth
+		se puede crear manualmente o con ayuda de la terminal con el comando: ng g g (nombreClase)
+	34. Se agrega el constructor y se inyecta la variabale de tipo AuthService y Router
+		ej.
+			consturctor(private authService: AuthService, private router: Router){}
+	35. Se crea un metodo llamado isTokenExpirado():boolean{}
+		Este metodo revisara si el tiempo de expiracion del token ha expirado, en el token este tiempo se muestra con el atributo exp
+		ej.
+			isTokenExpirado():boolean{
+				let token = this.authService.token;
+				let payload = this.authService.obtenerDatosToken(token);
+				let now = new Date().getTime() /1000;
+				if (payload.exp < now){
+					return true;
+				}
+				return false
+			}
+	36. Dentro del metodo canActive dentro de state: se coloca el siguiente codigo
+		Se autentica el token y a parte se revisa si el tiempo de expiracion del token ha expirado
+
+			if(this.authService.isAuthenticated()){
+				if(this.isTokenExpirado()){
+					this.authService.logout();
+					this.router.navigate(['/login']);
+					return false;
+
+				}
+				return true;
+			}
+			this.router.navigate(['/login']);
+			return false;
+
+
+		CLASE GUARD ROLE
+	37. Se crea clase guard llamada role
+	38. Se agrega el constructor y se inyecta la variabale de tipo AuthService y Router
+		ej.
+			consturctor(private authService: AuthService, private router: Router){}
+	39. Dentro del metodo canActivate dentro de state: se coloca el siguiente codigo
+		Se autentica el token, y se verifican los roles de los usuarios para saber si tiene acceso a las paginas o no
+
+			if(!this.authService.isAuthenticated()){
+				this.router.navigate(['/login']);
+				return false;
+			}
+
+			let role = next.data['role'] as string;
+			if(this.authService.hasRole(role)){
+				return true;
+			}
+			this.router.navigate(['/clientes']);
+			return false;
+
+
+
+		CLASE APP.MODULE.TS O APP.ROUTING.TS (donde esten configuradas las rutas)
+
+	40. Se agregan los guard en las rutas que se necesiten
+		Se puede tener mas de un guard en la lista
+		Aparte se puede colocar data para indicar un atributo y el valor que se requiere para que se cumpla el guard
+		como en el guard role se obtuvo el role desde next.data en busca del atributo role, esto es lo que se tiene que especificar en el path
+		ej. 
+		{path: 'clientes/form', component: FormComponent, canActivate:[AuthGuard, RoleGuard], data: {role: 'ROLE_ADMIN'}}
+
+
+
+
+

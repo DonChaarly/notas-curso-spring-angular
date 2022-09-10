@@ -1,0 +1,40 @@
+
+
+
+
+					PAGINACION
+		La paginacion se refiere a que el frontend recibira del backend un paqute de
+		registros en vez de el total de registros que conforman la tabla
+		Para esto se utilizan los observables, los cules deben regresar un tipo de dato any
+		ya que se estara trabajando con objetos empaquetados dentro de un json
+
+		EN CLASE COMPONENT.TS
+		1. pasar la variable asignada al numero de pagina como parametro al metodo
+			Se debe establecer una variable la cual indicara el numero de pagina que se quiere
+			Esta se pasa como parametro al metodo que maneja la paginacion
+			ya sea el getClientes u otro
+		2. En el .susrcribe se accede a al lista de registros por medio del resopnse.content
+			Como ahora los registros no vienen en la primera capa del json
+			se debe acceder a ellos por la variable que de verdad los contiene que el el content
+			y se hace un cast al tipo de dato que se queira 
+			ej. .suscribe(response => this.clientes = response.content as Cliente[]);
+
+
+		EN CLASES SERVICE
+		3. Se coloca el parametro page al metodo que manejara la paginacion
+			Este metodo debe tener como parametro una variable que almacene el numero de pagina que se quiera
+			ej. getClientes(page: number): Observable<any>{...
+		4. Cambiar el tipo de retorno de los metodos a Observable<any>
+			Se debe manejar este retorno ya que se esta trabajando con objetos empaquetados en json
+		5. En el operador map() se debe especificar el parametro como de tipo any
+			ej. map( (response: any) ) =>{
+			}
+		6. Para acceder a los objetos del response se coloca .content y se hace un cast al tipo de objeto a trabajar 
+			El cast se hace si se va a trabajar con los datos del objeto
+			ej. (response.content as Cliente[]).map(cliente =>{
+				cliente.nombre = cliente.nombre.toUpperCase();
+				return cliente;
+			})
+			return response;
+			Si no se le va a hacer nada a los datos no hace falta, solo se retorna el response a secas
+			ej2. return response

@@ -1,0 +1,30 @@
+
+
+
+				PRIMERAS COSAS QUE HACER EN ANGULAR
+
+	1. Se crean los componentes de la aplicacion
+	2. Se crean las vistas y estilos del frontEnd
+	3. Se crean las clases entidad que se necesiten para los objetos que necesitemos
+		EJ. export class Cliente{
+			contructor(nombre: String, apellido: String);
+		}
+	4. En los componentes.ts se agrean atributos que seran listas de los objetos entidad que necesite la vista
+		Ej. clientes: Cliente[] = [];
+	5. Las listas se pueden mandar llamar dentro de las vistas con el comando *ngFor y con interpolacion se accede a los valores de la lista
+		Ej. <ul *ngFor = "let cliente of clientes">
+				<li> {{ cliente.nombre }}</li>
+			</ul>
+	6. Se crean las clases de servicio para cada clase entidad y para cada componente
+		Se puede utilizar la terminal o crearla manualmente
+		El ocmando para la terminal es: ng g service (nombreClaseService)
+		O Crear la clase con el nombre (nombreClae).service.ts
+		A esta clase se le debe colocar el decorador @Injectable()
+		y debe ser export
+		Ej. @Injectable()
+		export class ClienteServicio {
+			constructor(){}
+		} 
+	7. Se inyectan e importan las clases service en los archivos component.ts y en el archivo app.module.ts
+		Se agregan las clases servicio en el archivo app.module.ts en los providers
+		En el contructor de los componentes se incluye una instancia de las clases service

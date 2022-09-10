@@ -1,0 +1,47 @@
+
+
+
+				OBSERVABLES EN ANGULAR
+
+	Los observables son como centinelas que ejecutan un codigo cuando se recibe datos
+	Cuando cambia algun dato ya sea en el frontEnd o en backend, carga los datos al frontEnd de manera automatica
+	No se tiene que esperar a recargar la pagina para que se carguen los datos
+	Se tiene un observable el cual seria el evento y un observador el cual seria el codigo a ejecutar
+	Se utiliza la libreria RxJs la cual es una libreria que nos permite impementar 
+	programacion reactiva con la que podemos trabajar con flujos de datos que luego no llega de forma inmediata
+
+
+	CARACTERISTICAS
+		Asincrono: funciones asincronas para por ejemplo trabajar con peticiones Http, consumo de API REST
+		Flujo de datos o stream: Se trabaja con flujos de datos
+		Concurrentes: Esto quiere decir que no bloquea otro proceso
+		Metodo suscribe: Este metodo es el que ejecutar el codigo que contenga cuando se realice el envento
+		Operadores Map, filter, retry, etc : Con estos operador podemos procesar un dato y convertirlo en algo mas
+		Manejo de errores: Con bloques catch error se pueden procesar los errores
+		Infinitos: Pueden implementar un codigo cada cierto de forma indeterminada
+		Son cancelables: Se puede finalizar la suscripcion en cualquier momento
+
+------------------------------ PASOS QUE SE SIGUEN PARA IMPLEMENTARLOS -------------------------------------------------
+
+		EN CLASES SERVICE
+	1. Los metodos deben retornar un objeto Observable<(listaClaseEntidad)>
+		Ej. getClientes(): Observable<Clientes[]>{
+			return this.http.get<Cliente[]>(this.url);
+		}
+	2. Se pueden agregar operadores a los observables con el metodo pipe
+		(OPCIONAL) Map nos permite convertir un tipo de dato a otro como un json a un objeto persona
+			ej. return this.http.get(this.url).pipe(
+				map(response => response as Persona[])
+			);
+		(OPCIONAL) Tap nos permite hacer los mismo que el map, pero este metodo no retorna ningun valor
+			es decir, retorna un void, asi que se puede utilizar por ejemplo para asignar un valor a una variable
+			Tambien se puede utilizar en los metodos de la clase component.ts, antes de .suscribe()
+
+		EN CLASE COMPONENT.TS
+	3. Se coloca el metodo .suscribe() a los metodos que regresen un objeto observable de la clase service
+		Los metodos de la clase service que regresen un objeto observable tendran la posibilidad de
+		hacer una suscripcion y ejecutar alguna funcion o lamda con los parametros que se reciban
+		Ej. this.clienteService.getClientes().suscribe(
+			clientes => this.clientes = clientes
+		);
+

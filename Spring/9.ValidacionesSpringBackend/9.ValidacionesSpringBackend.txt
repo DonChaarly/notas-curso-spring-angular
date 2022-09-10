@@ -1,0 +1,27 @@
+
+
+
+			VALIDACIONES EN SPRING BACKEND
+
+	Las validaciones ayudan a verificar que se estan introduciendo los tipos de datos y de la 
+	forma que se quiere a la base de datos
+	Esto se hace conel API de java Validation el cual funciona junto con spring
+
+
+	EN LA CLASE DE ENTIDAD
+		1. Se agregan las anotaciones necesarias para validar los atributos de la clase
+			@NotEmpty: Indica que el campo no puede ser vacio
+			@Size(min = , max = ): Indica el min y maximo de caracteres del campo
+			1.1. Se pueden costumizar los mensajes que enviaran las validaciones:
+				 agregando el atributo message = "" a las anotaciones, se puede especificar el mensaje a enviar
+			@NotNull: Es igual que el notempty pero este debe utilizarse para tipos date
+
+	EN CLASE CONTROLADORA
+		2. Se agregan las anotaciones necesarias a los metodos del controlador
+			@Valid: Se agrega a los parametros de los metodos que se validaran con lo establecido en las clases de entidad
+		3. Se agregan el parametro BindingResult result a los metodos del controlador:
+			Este parametro indicara si ocurrieron errores en las validaciones
+			Se puede acceder a los errores con el metodo getFieldErrors() 
+			Se puede acceder a cierto campo de uno de los errores y el mensaje con los metodo err.getField() y err.getDefaultMessage()
+			Despues en un bloque if se puede preguntar si hay errores para ejeuctar alguna accion
+

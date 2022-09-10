@@ -1,0 +1,29 @@
+
+
+
+			COMO SE CONECTA UN PROYECTO ANGULAR CON UN BACKEND DE UN DOMINIO A OTRO
+
+			EN APP.MODULE.TS
+		1. Se importa el modulo HTTPClientModule
+			import {HTTPClientModule} from '@angular/common/http';
+		2. Y se agrega a los imports
+			HTTPClientModule
+
+
+			EN CLASES DE SERVICIO
+		3. Se importa elmodulo HttpClient
+			import {HttpClient} from '@angular/common/http';
+		4. Se agrega al constructor un objeto HttpClient
+			constructor(private	http: HttpClient) {}
+		5. Se puede mandar llamar algun metodo del controlador
+			Se utiliza los metodos get, post, update, o delete
+			este metodo retorna un tipo any asi que hay que hacer un cast a lo que se quiera
+			ej. this.http.get<Cliente[]>('(url con la que esta definido el metodo, ej http://localhost:8080/api/clientes)')
+			Se puede adjuntar un parametro a la url con el uso de un expression lenguage
+			ej. this.http.get<Cliente[]>(`http://localhost:8080/api/clientes/${cliente.id}`)
+		6. Se puede mandar un objeto del front al backend
+			Se tiene que crear las cabeceras para poder enviar objetos json
+			ej.  private httpHeaders = new HttpHeaders({'Content-type': 'application/json'});
+			En el metodo post aparte del url se puede enviar el objeto que necesita el metodo y las cabeceras http
+			ej. return this.http.post<Cliente[]>(this.url, cliente, {headers: this.httpHeaders})
+

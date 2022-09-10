@@ -1,0 +1,67 @@
+
+
+
+			DESPLIEGUE DE SERVIDORES EN PRODUCCION
+
+	Por parte de spring se puede por ejemplo utilizar el servidor http Apache,
+	 internet Information Service, con node.js + Express, servicios en la nube
+	 pero siempre tiene que ser un servidor http que pueda servir contenido estatico (html, js, css)
+
+
+	 Se puede desplegar el backend de forma local o en un hosting, vps, 
+
+
+
+	 	FORMA NATIVA DE SPRING CON APACHE TOMCAT
+
+	Spring cuenta con un servidor tomcat optimizado, listo para produccion el cual viene embebido dentro
+	Solo se tiene que generar el jar, se empaqueta y se publica
+
+
+
+			PREPRACIONES EN EL SERVIDOR BACKEND SPRING
+
+		EN CLASE RESOURCE SERVER CONFIG
+	1. Se coloca la verdadera ruta de dominio del cliente
+		En el metodo corsConfigurationSource
+		En el metodo config.setAllowedOrigins(Arrays.asList("dominioDelCliente", "Se puede colocar mas de un dominio"));
+		Si se coloca "*" se esta diciendo que se permiten todos los dominios, pero esto no es recomendable
+
+
+		EN CLASES CONTROLADORAS
+
+	2. Se coloca la verdadera ruta de dominio del/delos cliente/s en el Cors
+		En la anotacion @CrossOrigin(origins = { "dominio", "Se puede colocar mas de un cliente"})
+		Si se coloca "*" se esta diciendo que se permiten todos los dominios
+
+		(OPCIONAL) EN ARCHIVO IMPORT DE SENTENCIAS SLQ
+		Si se tiene un archivo import el cual se encuentra en resource
+		Las cadenas con acentos y caracteres especiales causaran conflicto
+	3. Se Cambia  el tipo de Text file encode por alguno que soporte caracteres especiales como ISO-8859-1
+		Se da click drecho en el archivo y nos vamos a preferencias
+		En la pestana de resource en TextFileEncode le colocamos other y seleccionamos el que queramos
+	4. Se corrigen los caracteres que se danaron al hacer el cambio en el archivo
+		Dentro del archivo pueden haber caracteres que se cambiaron
+
+
+
+
+			GENERANDO EL ARCHIVO JAR
+		Si se esta trabajando con otro servidor externo como tomcat, gassfish, se tiene que generar el archivo war y no eljar
+		Se tiene que tener creada la clase serlet initializer dentro del package base del proyecto (investigar)
+
+	5. Se verifica que se cuente, en la carpeta del proyecto, con los archivos mvnw, mvnw.cmd y la carpeta .mvn
+	6. En la terminal del sistema, nos vamos a la carpeta del proyecto con el comando cd ...
+	7. Se ejecuta el comando: .\mvnw.cmd clean package
+		se utiliza mvnw para linux, para windows se puede utlizar tanto mvnw.cmd como mvnw
+		El comando clean, se ejecuta nadamas la primera vez que se genere el archivo, despue se puede omitir
+
+
+
+			PUBLICAR EL BACKEND 
+		Esto se puede hacer de forma local con el simbolo del sistema o en un hosting con la consola ssh
+		Se tiene que tener instalado en la maquina, osea en el hosting, java el jdk y las herramientas necesarias como mysql o glassfish
+
+	8. En la termianl se coloca el siguiente comando: java -jar (ubicacion del archivo jar generado)
+
+

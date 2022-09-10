@@ -1,0 +1,71 @@
+
+
+
+			CRUD EN ANGULAR
+	CRUD: Create, Read, Update, Delete
+	Se deben implementar estos metodos en la clase service de parte de angular para 
+	comunicarse con los metodos del controldaor del backend
+
+
+		EN CLASES SERVICE
+	1. Se implementan los metodos CRUD
+		Se pueden implementar observadores para que los cambios en los datos del servidor se reflejen eutomaticamente
+		En los observadores en vez de utilizar Cliente se puede utilizar any (ver clase 66 min 1:00)
+
+	Ejemplo:
+		  getClientes(): Observable<Cliente[]> {
+		    //Otra forma de convertir los json a cliente;
+		    return this.http.get(this.urlEndPoint).pipe(
+		      map(response => response as Cliente[])
+		    );
+		  }
+
+		  create(cliente: Cliente) : Observable<Cliente> {
+		    return this.http.post<Cliente>(this.urlEndPoint, cliente, {headers: this.httpHeaders})
+		  }
+
+		  getCliente(id): Observable<Cliente>{
+		    return this.http.get<Cliente>(`${this.urlEndPoint}/${id}`)
+		  }
+
+		  update(cliente: Cliente): Observable<Cliente>{
+		    return this.http.put<Cliente>(`${this.urlEndPoint}/${cliente.id}`, cliente, {headers: this.httpHeaders})
+		  }
+
+		  delete(id: number): Observable<Cliente>{
+		    return this.http.delete<Cliente>(`${this.urlEndPoint}/${id}`, {headers: this.httpHeaders})
+		  }
+
+	2. Se implementan estos metodos en los component.ts que se necesiten
+		Se puede hacer uso de los observables al suscribirse a los metodos para ejecutar un codigo cuando 
+		se modifique algun valor del servidor
+
+		Ejemplos:
+
+		cargarCliente(): void{
+		    this.activatedRoute.params.subscribe(params => {
+		      let id = params['id']
+		      if(id){
+		        this.clienteService.getCliente(id).subscribe( (cliente) => this.cliente = cliente)
+		      }
+		    })
+		  }
+
+		  create(): void {
+		    this.clienteService.create(this.cliente)
+		      .subscribe(cliente => {
+		        this.router.navigate(['/clientes'])
+		        swal('Nuevo cliente', `Cliente ${cliente.nombre} creado con éxito!`, 'success')
+		      }
+		      );
+		  }
+
+		  update():void{
+		    this.clienteService.update(this.cliente)
+		    .subscribe( cliente => {
+		      this.router.navigate(['/clientes'])
+		      swal('Cliente Actualizado', `Cliente ${cliente.nombre} actualizado con éxito!`, 'success')
+		    }
+
+		    )
+		  }

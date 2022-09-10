@@ -1,0 +1,173 @@
+
+			PRINCIPALES HERRAMIENTAS DE LOS WEBSOCKET CON STOMP Y SOCKJS
+		IMPORTS
+			import {Client} from '@stomp/stompjs';
+			import * as  SockJs from 'sockjs-client';
+		Conexino con el servidor con variable client
+			this.client = new Client();
+			this.client.webSocketFactory = ()=>{
+				return new SockJS("(dominioDelServidor)/(rutaConLaQueElClienteSeConectaAlServidor")
+			}
+		Metodos que escuchan la conexion y desconexion al servidor
+			this.client.onConnect = (frame) => {}
+			this.client.onDisconnect = (frame) =>{}
+		Conexin y desconexion al servidor
+			this.client.activate();
+			this.client.deactivate();
+		Suscripcion a un evento del servidor
+			this.client.suscribe('/chat/mensaje', e = {});
+		Envio de informacion al servidor
+			this.client.publish({destination: '/app/mensaje', body: JSON.stringify(this.mensaje)});
+
+
+
+
+
+				GENERACION DE APLICACION ANGULAR
+
+	1. En la terminal nos dirigimos a la carpeta donde queramos guardar el proyecto con el comando: cd
+	2. Ejecutamos el comando: ng new (nombreProyecto)
+	3. Nos perguntan diversar cosas
+		Como si queremos crear el componente routing, coloamos que si para especificar rutas en este componente
+		Los tipos de estilos
+	4. Abrimos VisualStudio y el proyecto
+	5. Abrimos la terminal de visualStudio y creamos los componentes con el comando: ng g c (nombreComponente)
+		ej.: ng g c chat
+		Podemos borrar el archivo spect de los componentes
+	6. Si se quire instalar bootstrap se coloca el siguient comando: npm i bootstrap jquery popper.js --save
+		Tambien se configuran las hojas de estilo, los scripts y todo eso en el archivoangular.json
+
+
+		EN ARCHIVO APP-ROUTING.MODULE.TS
+	7. Dentro de routes: Routes se agregan las rutas que queramos asignar a los componentes
+		ej.: {path: '', componente: ChatComponent} //Con '' en blanco indicamos nuestra ruta principal
+		ej.2: {path: '', redirectTo: 'chat', pathMatch: 'full'},// Se puede colocar un redirectTo para indicar que cuando se ejecuta la ruta se rediriga al 															componente de la otra ruta
+			  {path: 'chat', component: ChatComponent}
+
+
+		EN ARCHIVO APP.MODUILE.TS
+	8. Se importa la clase FormsModule para poder utilizar el ngModel
+	9. TAmbien se agerga dentro de la seccion imports:[FormsModule]
+
+		EN ARCHVO APP.COMPONENT.HTML
+	10. Borramos todo y dejamos la etiqueta
+		<router-outlet></router-outlet>
+
+
+				INTALACION DE LIBRERIAS SockJS y STOMPJS
+	11. Nos vamos a la pagina de npmjs en busca de la libreria stomp.js: https://www.npmjs.com/package/@stomp/stompjs
+	12. Ahi nos mostrara el comando que utilizaremos para instalar stomp: npm i @stomp/stompjs
+	13. Ahora buscamos la libreria de sockjs-client: https://www.npmjs.com/package/sockjs-client
+	14. ahi nos mostrar el comando que utlizaremos para instalar sockjs: npm i sockjs-client
+
+			EN LA TERMINAL
+	15. Se instala la libreria stomp.js al ejectuar el comando: npm i @stomp/stompjs
+	16. Se instala la libreria se sockjs al ejecutar el comando: npm i sockjs-client
+	17. Instalamos los tipos para sockjs al ejeuctar el comando: npm i @types/sockjs-client --save-dev
+
+			EN ARCHIVO POLYFILLS.TS
+	18. Casi al final despues de  *APPLICATION IMPORTS se agrega la siguiente variable
+		(window as any).global = window;
+
+			CLASES ENTITY
+	19. Se crea una carpeta llamada models
+	20. Se crean las clases entidad 
+		ej.
+			ng g class chat/models/mensaje
+	21. Se agregan los atributos a las clases entidad
+
+
+		EN COMPONENTES.TS
+	22. Agregamos el import de stomp.js y stock.js
+		ej. import {Client} from '@stomp/stompjs';
+			import * as  SockJs from 'sockjs-client';
+	23. Agreamos instancias de las clases model que necesitemos 
+		Estas se pueden llamar desde las vistas con un ngModel
+		ej.
+			mensaje: Mensaje = new Mensaje();
+	24. Creamos un atributo de tipo Client con el cual podremos suscribirnos a los eventos, a enviar mensajes, etc. y lo inicializamos
+			En SockJS se especifica la ruta con la que el cliente se puede conectar al cliente la cual se especifica en la clase WebSocketConfig
+		ej. private client: Client;
+			ngOnInit(){
+				this.client = new Client();
+				this.client.webSocketFactory = ()=>{
+					return new SockJS("(dominioDelServidor)/(rutaConLaQueElClienteSeConectaAlServidor")
+				}
+			}
+	25. Agreamos un atributo llamado conecatado de tipo boolean que se encargara de gestionar la conexion y desconexion del servidor
+		ej.
+			conectado: boolean = false;
+	26. Agregamos los eventos onConnect y onDisconnect al metodo OnInit
+		Estos metodo escucharan cuando nos conectemos al servidor o nos desconectemos
+		y se ejecutara el codigo que especifiquemos dentro
+		La variable frame contiene toda la informacion de nuestra conexion o desconexion
+		ej.
+			ngOnInit(){
+				...
+				this.client.onConnect = (frame) => {
+					console.log('Conectados: ' + this.client.connected + ' : ' frame);
+					this.conectado = true;
+				}
+				this.client.onDisconnect = (frame) =>{
+					console.log('Desconectados: ' + !this.client.connected + ' : ' frame);
+					this.conectado = false;
+				}
+			}
+
+	27. Agreamos un metodo llamado conectar():void el cual se encargara de conecarse al servidor con el metodo .activate()
+		ej.
+			conectar():void{
+				this.client.activate();
+			}
+	28. Agreamos un metodo llamado desconectar():void el cual se encargara de desconecarse al servidor con el metodo .deactivate()
+		ej.
+			desconectar():void{
+				this.client.deactivate();
+			}
+
+
+		EN COMPONENT.HTML
+	29. Se implementan las vistas
+	30. En algun boton se pueden implementar los metodo conectar() o desconectar()
+		Tambien se podria mostrar los botones dependiendo si se esta conectado o desconectado del servidor con un ngIf
+		ej. 
+			<button type="button" (click) = "conectar()" *ngIf="!conectado">Conectar</button>
+			<button type="button" (click) = "desconectar()" *ngIf="conectado">Desconectar</button>
+
+
+		En COMPONENT.TS
+	31. Dentro del metodo this.client.onConnect nos suscribimos a algun evento que mande el backend con @SentTo
+		En e estara el objeto que se  recibio pero de tipo String, se tiene que castear con el metodo JSON.parse
+		Se puede hacer con esto lo que se quiera, com por ejemplo guardarlo en una lista 
+		ej.
+			this.client.suscribe('/chat/mensaje', e = {
+				let mensaje: Mensaje = JSON.parse(e.body) as Mensaje;
+				this.mensajes.push(mensaje);
+				console.log(mensaje);
+			});
+	32. Nos podemos suscribir a un evento que necesite un parmetro 
+		Esto se hace para que por ejemplo cada usuario tenga un evento unico al que conectarse
+		ej.
+			this.client.suscribe('/chat/historial/'+clienteId, e =>{
+				const historial = JSON.parse(e.body) as Mensaje[];
+			});
+
+	33. Creamos un metodo para enviar informacion al servidor, se puede llamar como queramos, ej. EnviarMensaje()
+		Este metodo se puede aplicar a un boton de la vista 
+		Con el metodo publish se puede enviar objetos al servidor
+		Entre llaves ya que se envia un objeto,
+		En destination se coloca el url del metodo controlador al que se enviara el objeto
+		En body se envia el cuerpo del mensaje a enviar, el cual puede ser un objeto pero convertido a string con JSON.stringify
+		ej
+			enviarMensaje():void{
+				this.client.publish({destination: '/app/mensaje', body: JSON.stringify(this.mensaje)});
+				this.mensaje.text = '';
+			}
+
+
+
+
+
+
+
+

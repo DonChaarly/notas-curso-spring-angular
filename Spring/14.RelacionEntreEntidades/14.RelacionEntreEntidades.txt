@@ -1,0 +1,54 @@
+
+
+
+			RELACION ENTRE CLASES ENTIDAD
+		Si se tiene una relacion de tablas en la base de datos
+		esto se tiene que tambien ver reflejado en las clases entidad
+
+
+		EN CLASE ENTIDAD QUE TENDRA LA LLAVE FORANEA
+	1. Se agrega la anotcion @ManyToOne o @OneToOne dependiendo del caso en el atributo
+		Y se coloca el tipo de fetch(tipo de carga), normalmente se coloca lazy
+		ej @ManyToOne(fetch=FetchType.LAZY)
+		Tambien se puede cofigurar la persistencia en cascada, osea que cuando se ejecute alguna accion en la 
+		entidad, se ejecutar tambien en la clase relacionada sin necesidad de ejecutar la accion en la entidad por separado
+		como por ejemplo actualizar, eliminar, crear, etc.
+		ej. para que la clase relacionada ejecute todas las acciones tambien se coloca type.ALL
+			@ManyToOne(cascade = CascadeType.ALL)
+		Si se quiere tener una relacion bidireccional, osea teniendo en una clase una lista de los objetos relacionados de otra clase
+		Se agrega la anotacion @OneToMany y el atributo mappedBy para indicar el nombre del atributo con el que esta relacionado en la otra clase
+		Tambien se tiene que agregar la anotacin @JsonIgnoreProperties y colocar el nombre de este atributo con el que se relaciona para evitar la recursion infinita
+		Se tiene que agregar tambien en la otra clase pero haciendo referencia al nombre de la lista atributo 
+		ej.
+		En clase articulo:
+			@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "articulo")
+		    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "articulo"})
+		    private List<Promociones> promociones;
+		En clase promociones:
+			@ManyToOne(fetch = FetchType.LAZY)
+		    @JoinColumn(name = "id_articulos", referencedColumnName = "id_articulos")
+		    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "promociones"})
+		    private Articulos articulo;
+	2. Se coloca la anotcion @JoinColumn(name="")
+		Para especificar el nombre de la columna que tendra la relacion con el atributo
+	3. Se coloca la anoacion @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+		Esto debido a que con Lazy se genera un proxy hacia el objeto entity del atributo
+		Esto va a provocar un error por ello esto se tiene que omitir del json para ello se coloca la anotacion
+
+		EN CLASES DAO
+	4. Se crean nuevas interface DAO para las entidades
+		Tambien se puede agregar nuevos metodos a la interface DAO que ya tengamos
+		y personalizarla a como queramos
+		por ejemplo
+		Se agrea un metodo: public List<Region> findAllRegiones();
+		y se le coloca una anotacion @Query("") para colocar la consulta que hara
+		por ejemplo @Query("from Region")
+
+		EN CLASE SERVICE
+	5. Se crean las interfaces y clases service
+	6. Se crean los metodos necesarios
+	7. Se define la implementacion de lso metodos utilizando los metodos dao
+
+
+		EN CLASE CONTROLADORA
+	8. Ahora se puede utilizar los metodos del service en los metodo de la clase controladora

@@ -1,0 +1,365 @@
+
+
+
+
+				SEGURIDAD CON OAUTH 2 con JWT
+
+		Cuando se trabaja con una aplicacion que tiene todo en uno osea backend y frontend juntos
+		lo mas tipico es trabajar con sesiones
+		Sin embargo para trabajar con backend remotos a los que se conectan diferentes clientes
+		es mas facil trabjar con tokens
+		Por ello se utilizan los JWT (Jason Web Token), el cual es un estandar abierto para implementar seguirdad en aplicaciones api rest
+			Funciona de la siguiente manera
+				El usuario manda un codigo alfanumerico al servidor
+				El servidor lo decodifica, valida y verifica que el usuario existe, si tiene permisos, etc.
+		Esto nos evita tener que guardar sesiones en el servidor lo que lo hace mas ligero
+
+		CARACTERISTICAS
+			El token es muy compacto
+			la transmision es mucho mas facil y ligera
+			Ess completamente automnoma, contiene toda la informacion sobre el usuario, evitando realizar consultas en el servidor
+			No se debe guardar informacion sensible en los token
+			Se les puede colocar un tiempo de caducidad
+			El metodo de auteticacion es stateless
+
+			CODIGOS SECRETOS EN JWT
+		Los codigos JWT utilizan un codigo secreto para autenticar la integridad de la firma, al decodificar
+		con un algoritmo HS256 se utilizara un una autenticacion por codigo secreto de 256 bits
+			El codigo secreto de tipo HS256 lo genera uno mismo, puede ser cualquier string de cualquier tamano
+		pero con un algoritmo RS256 elcual es un algoritmo mas rubusto, se utilizara un certificado publico para la autenticacion de integridad y un certificado privado para firmar el token
+			El certificado RSA necesita de una aplicacion que nos ayude a crearlo como por ejemplo Openssl
+			Esta se descarga de la pagina Openssl.org, Una vez en la pagina nos vamos a community, binaries, wiki, se descarga la version v1.1.1q
+			Si al instalar, elcomando openssl no sirve es porque falta configurar el path en las variables del sistema
+			Una vez instalado se abre la terminarl, y 
+			con el comando openssl genrsa -out (nombreQueSeLeDaraAlArchivo).pem, se genera el certificado
+			con el comando openssl rsa -in (nombreQueSeLeDaraAlArchivo).pem, se muestra el certificado privado para poder copiarlo
+			con el comando openssl rsa -in (nombreQueSeLeDaraAlArchivo).pem -pubout, se muestra el certificado publico para poder copiarlo
+
+
+
+
+
+		SE UTILIZARA EL FRAMEWORK DE SPRING SECURITY
+	el cual provee caracteristicas de seguridad para aplicaciones empresariables java EE
+	maneja componentes de Autenticacion y Autorizacion
+
+
+		EN ARCHIVO POM.XML
+	1. Se agregan las dependecias (OAuth esta deprecated, asi que ir con cuidao chaval)
+		<dependency>
+			<groupId>org.springframework.security.oauth</groupId>
+			<artifactId>spring-security-oauth2</artifactId>
+			<version>2.3.4.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-jwt</artifactId>
+			<version>1.0.9.RELEASE</version>
+		</dependency>
+		Se agregan tambien estas librerias, se necesitan para projectos java verisiones mayor a 9
+		<!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+		<dependency>
+		    <groupId>javax.xml.bind</groupId>
+		    <artifactId>jaxb-api</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.glassfish.jaxb/jaxb-runtime -->
+		<dependency>
+		    <groupId>org.glassfish.jaxb</groupId>
+		    <artifactId>jaxb-runtime</artifactId>
+		</dependency>
+
+
+		CLASES DE ENTIDAD
+	2. Se crean las clases de entidad que se utilizaran como usuario y rol
+		CLASES DAO
+	3. Se crean las clases Dao de las entidades necesarias
+	4. Se agrega el metodo public Usuario findByUsername(String username);
+		CLASES SERVICE
+	4. Se crea la clase service para el usuario la cual debe implementar la interface UserDetailsService
+	5. Se coloca la anotacion @Service a la clase
+	6. Se agrega un atributo del tipo de la clase Dao y se le coloca la anotacion @Autowire
+	7. Se implementa el metodo de la interface y se le coloca la anotacino @Transactional(readOnly = true)
+	8. El metodo debe contener lo siguiente
+		public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+		//Se obtiene el usuario por medio del username con ayuda de la interface Dao
+		Usuario usuario = usuarioDao.findByUsername(username); 
+		
+		//Se pregunta si el usuario existe, si no existe se manda una excepcion
+		if(usuario == null) {
+			logger.error("Error en el loggin: no existe el usuario'"+username+"' en el sistema!");
+			throw new UsernameNotFoundException("Error en el loggin: no existe el usuario'"+username+"' en el sistema!");
+		}
+		
+		//Del usuario se obtienen los roles que tiene y se convierten a una lista del tipo GrantedAuthority
+		List<GrantedAuthority> authorities = usuario.getRoles()
+				.stream()
+				.map(role -> new SimpleGrantedAuthority(role.getNombre())).
+				peek(authority -> logger.info("Role: " + authority.getAuthority())).
+				collect(Collectors.toList());
+		
+		//Se regresa un objeto User al cual se le indican 
+		//	el username, password, el Enable, si el acountNonExpired, credentialNonExpired, accountNonLocked y authorities
+		return new User(usuario.getUsername(), usuario.getPassword(), usuario.getEnable(), true, true, true, authorities);
+	}
+
+		CLASES CONFIGURACION AUTH
+	9. Se crea el package auth dentro de la carpeta apirest
+
+		CLASE SPRING SECURITY CONF
+	10. Se crea la clase SpringSecurityConfig
+		En esta clase estara la configuracion de la autenticacion por parte de spring
+		Aqui estan algunos bean que se utilizan en otras clases
+	11. Se coloca la anotacion @Configuration y se extiende de la clase WebSecurityConfigureAdapter
+	12. Se agrega el siguiente codigo a la clase
+		//Se inyecata una instancia de tipo UserDetailsService, spring buscara una clase que implemente esta interface y como se tiene la de usuarioService, //usara esta
+		@Autowired
+		private UserDetailsService usuarioService;
+
+		//Se agrega un metodo que se encargar de la codificacion y se le agrega la anotacion Bean para que pueda ser inyectada en otras clases
+		@Bean
+		public static BCryptPasswordEncoder passwordEncoder() {
+			return new BCryptPasswordEncoder();
+		}
+
+		//Se sobreescribe el metodo configure que terminara de codificar la contrasena
+		@Override
+		protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+			auth.userDetailsService(usuarioService).passwordEncoder(passwordEncoder());
+			super.configure(auth);
+		}
+
+		//Este metodo nos siver para inyectar una dependencia de AuthenticatinoManager en otras clases
+		@Bean("authenticationManager")
+		@Override
+		protected AuthenticationManager authenticationManager() throws Exception {
+			return super.authenticationManager();
+		}
+
+		//Este metodo se utiliza para establecer los recursos a los que se les da acceso a los usuarios, esto se implementa tambien en la clase //ResourceServerConfig mas abajo esta el detalle, pero con algunas diferencias, ahi se configura lo de OAuth y aqui lo de spring
+		@Override
+		public void configure(HttpSecurity http) throws Exception {
+			http.authorizeHttpRequests()
+			.anyRequest().authenticated()
+			.and()
+			.csrf().disable()
+			.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		}
+
+			CLASE AUTHORIZATION SERVER CONFIG
+	13. Se crea la clase AuthorizationServerConfig
+		En esta clase se configura el nombre y contrasena que utilizara el cliente para poder obtener tokens
+		Tambien se puede configurar el tipo de codificacion del token y las claves secretas que tendra
+	14. Se agregan las anotacion @Configuration, @EnableAuthorizationServer y se extiende de la clase AuthorizationServerConfigurerAdapter
+	15. Se agrega el siguiente codigo, se configura segun las necesidades de los clientes
+		//se agrega una instancia del encriptador de contrasena
+		@Autowired
+		private BCryptPasswordEncoder passwordEncoder;
+		
+		//Se agrega una intancia del metodo authenticationManager 
+		@Autowired
+		@Qualifier("authenticationManager")
+		private AuthenticationManager authenticationManager;
+
+		//Este metodo se encarga de configurar los permisos de nuestro endpoints o rutas de acceso
+		@Override
+		public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
+			security.tokenKeyAccess("permitAll()")
+			.checkTokenAccess("isAuthenticated()");
+		}
+
+		//Este metodo se encarga de la configuracin de clientes tienene autorizacion a conectarse al backend
+		@Override
+		public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+			
+			//Se coloca el nombre del usuario que sera nuestro cliente angular
+			//Se coloca la contrasena, la cual se codifica con el metodo encode
+			//Se coloca los permisos que tendra, en este caso de lectura y escritura
+			//Se coloca el tip de concecion que tendra la aplicacion en este caso por password y refresh token, el cual renueva el token automaticamente cada que va a caducar
+			//Se tiene otros tipos de autenticacion a parte de password, como el authorization Code, implicita
+			//Se coloca tambien el tiempo en que caducara el token
+			//Se coloca tambien el tiempo en que se renovara el token automaticamente
+			clients.inMemory().withClient("angularapp")
+			.secret(passwordEncoder.encode("12345"))
+			.scopes("read", "write")
+			.authorizedGrantTypes("password", "refresh_token")
+			.accessTokenValiditySeconds(3600)
+			.refreshTokenValiditySeconds(3600);
+		}
+
+		//Este metodo se encarga de todo el proceso de autenticacion y validar el token
+		@Override
+		public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+			
+			endpoints.authenticationManager(authenticationManager)
+			.tokenStore(tokenStore())
+			.accessTokenConverter(accessTokenConverter());
+		}
+		//Este metodo se puede omitir al igual que el .tokenStore de arriba
+		@Bean
+		public JwtTokenStore tokenStore() {
+			return new JwtTokenStore(accessTokenConverter());
+		}
+		
+		//Este metodo se encarga de traduccion de la informacion del token para decodificar los datos y codificarlos tambien 
+		@Bean
+		public JwtAccessTokenConverter accessTokenConverter() {
+			JwtAccessTokenConverter jwtAccessTokenConverter = new JwtAccessTokenConverter();
+			return jwtAccessTokenConverter;
+	}
+	16. (OPCIONAL) Agregar codigo secreto propio de tipo algoritmo HS256
+		Si no se agrega uno propio, se genera uno aleatorio automaticamente
+		Se tiene que agregar el siguiente codigo antes del return en el metodo accessTokenConverter()
+			jwtAccessTokenConverter.setSigningKey("ejemplo.de.clave.secreta.de.tipo.hs256");
+		Se puede tener el string, en una clase a parte destinada a guardar informacion de este tipo
+	17. (OPCIONAL) Agregar certificado rsa propio de tipo algoritmo RS256
+		Este tipo de algoritmo es mas robusto que el HS256
+		Se tienen que generar el codigo rsa pivado y publico con ayuda de una aplicacion(se dice como en la parte de arriba)
+		Se tiene que agregar el siguiente codigo antes del return en el metodo accessTokenConverter()
+			jwtAccessTokenConverter.setSigningKey("codigoRSA_privadoGenerado");
+			jwtAccessTokenConverter.setVerifierKey("codigoRSA_publicoGenerado");
+		Se puede tener el string, en una clase a parte destinada a guardar informacion de este tipo
+
+		CLASE RESOURCE SERVER CONFG
+	18. Se crea la clase ResourceServerConfig
+		En esta clase se configura las rutas a las que se puede acceder y con que tipo de metodos
+	19. Se agrean las anotaciones @Configuration, @EnableResourceServer y se extiende de la clase ResourceServerConfigurerAdapter
+	20. Se agrega el siguiente codigo
+		// El siguiente metodo nos permite implementar todas las reglas de seguridad de
+		// nuestros endpoints
+		// De nuestras rutas hacia los recursos del controlador
+		@Override
+		public void configure(HttpSecurity http) throws Exception {
+
+			// Lo unico que es obligatorio tener es la linea de permitAll() y la de
+			// anyRequest().authenticated();
+			// Tambien la de .and().cors().configurationSource(corsConfigurationSource());
+			// Todo lo demas se puede configurar con anoaciones en el controlador
+
+			// Con authorizeHttpRequest().antMatchers() se establece un recurso para
+			// usuarios autenticados y no autenticados
+			// En el metodo antMatchers se colocan 2 parametros el primero el metodo para la
+			// ruta, y el segundo la ruta del recurso
+			// Si solo se coloca la ruta, esto quiere decir que esta vale para todos los
+			// tipos de metodos
+			// Despues de esto se coloca a quienes se les dara acceso con el metodo
+			// correspondiente
+			// Los dos ** en una ruta significa que el permiso vale para la ruta indicada y
+			// todas las demas que tengan algo despues
+			// El metodo .hasEnyRole nos sirve para indicar mas de un role, el hasRole para
+			// solo un role
+			// Se recomienda partir de lo mas especifico a lo mas generico
+			// Siempre se coloca al final .anyRequest().authenticated(); para decir que para
+			// cualquier otra peticion, se debe estar autenticado
+			http.authorizeRequests()
+					.antMatchers(HttpMethod.GET, "/api/clientes", "/api/clientes/page/**", "/api/uploads/img/**",
+							"/images/**")
+					.permitAll()
+					/*
+					 * .antMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAnyRole("USER",
+					 * "ADMIN") .antMatchers(HttpMethod.POST,
+					 * "/api/clientes/upload").hasAnyRole("USER", "ADMIN")
+					 * .antMatchers(HttpMethod.GET, "/api/clientes/{id}").hasAnyRole("USER",
+					 * "ADMIN") .antMatchers(HttpMethod.POST, "/api/clientes").hasRole("ADMIN")
+					 * .antMatchers("/api/clientes/**").hasRole("ADMIN")
+					 */
+					.anyRequest().authenticated()
+					.and().cors().configurationSource(corsConfigurationSource());
+
+		}
+
+		// El import de CorsConfigurationSource debe ser la que no dice .reactive
+		// En este metodo se configura el CORS de la aplicacion
+		// Con setAllowedOrigins se establecen los dominios de los clientes que seran
+		// capaces de conectarse con el backend
+		// Con setAllowedMethods se establecen los metodo que se permitiran
+		// Con setAllowCredentials Se establecen si se permitiran credenciales
+		// Con setAllowedHeaders se establecen las cabeceras que se permitiran
+		@Bean
+		public CorsConfigurationSource corsConfigurationSource() {
+			CorsConfiguration config = new CorsConfiguration();
+			config.setAllowedOrigins(Arrays.asList("http://localhost:4200"));
+			config.setAllowedMethods(Arrays.asList("GET", "POST", "PUNT", "DELETE", "OPTIONS"));
+			config.setAllowCredentials(true);
+			config.setAllowedHeaders(Arrays.asList("Content-type", "Authorization"));
+
+			// Con UrlBasedCorsConfiguration establecemos el cors y las rutas, /** significa
+			// que sera para todas las rutas
+			UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+			source.registerCorsConfiguration("/**", config);
+			return source;
+		}
+		
+		//Este meodo crea un filtro al cual le pasamos la configuracion de arriba y se establece un orden
+		@Bean
+		public FilterRegistrationBean<CorsFilter> corsFilter(){
+			FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<CorsFilter>(new CorsFilter(corsConfigurationSource()));
+			bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+			return bean;
+		}
+
+
+		EN CLASE SPRING SECURITY CONFIG
+	21. A la clase se le coloca la anotacion @EnableGlobalMethodSecurity(securedEnabled=true)
+
+		EN CLASE CONTROLADORA
+	22. Se les coloca la anotacion @Secured({"ROLE_(nombreDelRol)", "ROLE_(nombreDelRol)",...})
+		A los metodos a los que no se les coloca anotacion quiere decir que se les puede acceder libremente
+
+		INTERFACE SERVICE DEL USUARIO
+	23. Se agrega un metodo para encontrar usuario por nombre
+			ej. public Usuario findByUsername(String username);
+	24. Se implementa la interface del usuarioService a la clase usuarioService si es que no se tiene implementada
+	25. Se implementa el metodo findByUsername a la clase UsuarioService de la interface IUsuarioService
+
+
+		CLASE INFO ADICIONAL TOKEN
+	26. Se crea la clase InfoAdicionalToken
+		En esta clase se puede configurar la informacion adicional que tendra el token
+	27. Se implementa la interface TokenEnhancer y se coloca la anotacion @Component a la clase
+	28. Se agrega el siguiente codigo
+		@Autowired
+		private IUsuarioService usuarioService;
+
+		//En este metodo se configura la informacion adicional que tendra el token
+		@Override
+		public OAuth2AccessToken enhance(OAuth2AccessToken accessToken, OAuth2Authentication authentication) {
+			
+			//Con el objeto authentication se puede obtener informacion del usuario que esta ingresando
+			Usuario usuario = usuarioService.findByUsername(authentication.getName());
+			Map<String, Object> info = new HashMap<>();
+			
+			//Se puede ir agregando la informacion que queramos al map
+			info.put("info_adicional", "Hola que tal!".concat(authentication.getName()));
+			info.put("nombre_usuario", usuario.getId() + ": " + usuario.getUsername());
+			
+			((DefaultOAuth2AccessToken) accessToken).setAdditionalInformation(info);
+			return accessToken;
+		}
+
+
+		EN CLASE AUTHORIZATION SERVER CONFIG
+	29. Se inyecta una instancia de la clase InfoAdicionalToken
+		ej. 
+		@Autowired
+		private InfoAdicionalToken infoAdicionalToken;
+
+	30. Se registra el componente infoAdicional en el metodo configure, endpoints
+		El metodo quedaria de la siguiente manera
+		//Este metodo se encarga de todo el proceso de autenticacion y validar el token
+		@Override
+		public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+			TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+			tokenEnhancerChain.setTokenEnhancers(Arrays.asList(infoAdicionalToken, accessTokenConverter()));
+			
+			endpoints.authenticationManager(authenticationManager)
+			.tokenStore(tokenStore())
+			.accessTokenConverter(accessTokenConverter())
+			.tokenEnhancer(tokenEnhancerChain);
+		}
+
+		
+
+
+
+
+

@@ -1,0 +1,44 @@
+
+
+SPRING EN GENERAL:
+	Interfaces:
+		CrudRepository<Cliente, Long>: Se implementan en clases dao para ahorrar el crearlas por tu cuenta
+	En clases Controladora:
+		ResponseEntity<?>: Manejo de mensjes de errores al retornar un tipo de dato
+
+SECCINO WEB
+	Spring web: incluye el api y anotaciones para crear controladores restful
+			Anotaciones:
+				@RestController: Notifica a spring que el controllador es un controlador de tipo rest
+				@RequestMapping(): Se especifica el url con el que se va a llamar a este controlador
+				@CrossOrigin(): Se indica el CORS que el controlador permitira 
+				@GetMapping(): Se indica la uri con la que se va a mandar llamar un metodo del controlador mediante metodo GET
+				@PostMapping(): Se indica la uri con la que se va a mandar llamar un metodo del controlador mediante metodo POST
+				@PathVariable: Se coloca en el parametro del metodo para indicar a que parametro hara referencia la variable marcada en el uri
+
+SECCION IO:
+	Validations: Incluye el api de validations para hacer validacines en las clases de entidad
+			Anotaciones:
+
+
+
+SECCION SQL:
+	Spring Data JPA: Incluye las anotaciones para trabajar con el api de persistencia de java a traves de hibernate y clases entity
+		En application.properties (configuracion de conexion):
+			spring.jpa.database-platform=org.hibernate.dialect.MySQL5InnoDBDialect
+			spring.jpa.hibernate.ddl-auto=(crear/crear-eliminar/actualizar tablas automaticamente dependiendo de las clases de entidad de la aplicacion)
+
+	MySQL Driver: Se utiliza para trabajar con la base de datos MySQL
+		En application.properties (configuracion de base de datos):
+			spring.datasource.url=jdbc:mysql://localhost/(nombreDatabase)
+			spring.datasource.username=(usuario)
+			spring.datasource.password=(contraseña)
+			spring.datasource.driver-class-name=com.mysql.jdbc.Driver
+			
+			
+SECCION Developer Tools
+	Spring Boot DevTools: Permite refrescar automaticamente el servidor al realizar un cambio
+
+
+SECCION SECURITY
+	

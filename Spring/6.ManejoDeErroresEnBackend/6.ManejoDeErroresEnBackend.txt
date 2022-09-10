@@ -1,0 +1,29 @@
+
+
+
+								MANEJO DE ERRORES EN EL BACKEND
+
+			Si ocurre una excepcion, un error de la aplicacion, lo que el backend deberia 
+			hacer es mandar un codigo de estado, en caso de una excepcion un codigo 404 por ejemplo
+
+
+
+	EN CLASE CONTROLADORA
+		1. Retornar objetos de la clase ResponseEntity<?> en la definicion del metodo:
+			En vez de solo retornar los objetos entidad en los metodos se puede devolver 
+			un objeto de la clase ResponseEntity<?>, esto nos permitira mandar un mensaje de error y mandar el objeto
+			Se coloca un ? ya que no siempre se va a devolver un solo tipo de dato, puede ser la clase de entidad, como
+			tambien puede ser un string en donde se indique el mensaje de erro
+		2. Crear un objeto Map<String, Object>:
+			Se crea este objeto para despues retornarlo en el Objeto ResponseEntity<Map<String, Object>>
+			Se agrega al mapa los mensajes de error que se quieren enviar
+		3. Colocar un bloque try catch:
+			Debido a que se puede tener una excpecion al no poder acceder a la base de datos
+			Se tiene que cubir la linea que manda llamar los metodos service
+		4. Retornar objetos ResponseEntity<>:
+			Se puede hacer varior returns dependiendo de las condiciones que se apliquen, como dentro del bloque catch
+			dentro de un if para preguntar si el objeto al que se quiere acceder es un null
+		    o simplemente para retornar el objeto entidad en caso de que todo sea correcto
+		    La sentencia que se emplea es:
+		    	return new ResonseEntity<(tipo de dato)>((objeto a enviar), (codigo de estado));
+		 

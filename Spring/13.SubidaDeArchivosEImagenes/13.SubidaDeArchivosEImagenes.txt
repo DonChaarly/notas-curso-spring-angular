@@ -1,0 +1,83 @@
+
+
+
+
+			SUBIDA DE ARCHIVOS E IMAGENES
+
+
+		Para subir archivos o imagenes es necesrio que sea a traves de FormData
+		osea a traves de datos de un formulario que soporte multipack
+		No se pueden enviar los datos a traves del curpo del request
+		Sin embargo debido a que el metodo que carga nuevo datos recibe un RequestBody
+		Este tipo de parametro no nos sive
+		Por ello Es buena practica crear un metodo (upload) aparte para la subida de archivos
+
+				EN CLASE ENTITY
+		1. Se agrega un atributo asignado al archivo de tipo String
+
+
+				EN CLASES CONTROLADORA (TODO ESTE CODIGO PUEDE ESTAR EN UNA CLASE SERVICE SEPARADA QUE SE ENCARGUE DE LO DE LOS ARCHIVOS)
+			PARA GUARDAR Y ELIMINAR ARCHIVOS
+		2. Se crea el metodo que va a manejar la subida de archivos (upload) 
+			Este metodo regresa un ResponseEntity<?>
+		3. Se coloca como parametro un parametro de tipo MultipartFile
+			Este es el tipo de dato que contendra al archivo
+		4. Se coloca la anotacion @RequestParam("(nombreParametro") al parametro MultipartFile
+			Este parametro sera el que contendra el archivo o foto 
+			Entre comillas se coloca el nombre del parametro
+			Tambien se pueden colocar mas parametros como un id para saber a que objeto le va a asignar el archivo
+			Este id Tambien debe ser un RequestParam
+		5. Se valida que el parametro sea distinto de empty
+		6. La clase MultipartFile tiene diferentes metodos que se pueden utilizar
+			como .getOriginalFilename(): Regresa un string con el nombre original del archivo
+		7. Se puede utilizar la clase UUID para crear un indentificador unico random para los nombre de los archivos
+			Para esto al obtener el nombre del archivo se le concatena el metodo UUID.randomUUID().toString()
+		8. Se puede colocar tambien el metodo replace para reemplazar todos los espacios en blanco por nada par que no tenga espacios en blanco
+		9. Se crea una carpeta dentro del archivo donde se va a guardar los archivos
+			No es buena idea guardar estos archivos dentro de una base de datos
+			Pero tambien se puede hacer dentro de una columna con tipo BLOB de la base de datos
+		10. Se establece la ruta en donde se va a guardar el archivo con un tipo Path
+			ej. Path rutaArchivo = Paths.get("uploads").resolve(nombreArchivo).toAbsolutePath();
+		11. Con la clase File se guarda el archivo
+			Esto se tiene que hacer rodeado de un bloque try catch ya que puede mandar una excepcion
+			ej. Files.copy((archivo).getInputStream(), (rutaArchivo));
+		12. Se tiene que borrar la foto anterior en caso de que ya se tenga una foto
+			Se obtiene el nombre de la foto anterior con la funcion de la clase dao correspondiente
+			Se pregunta si el nombre es null
+			Se obtiene el path de donde se va a borrar de la misma forma en que se creo un path nuevo
+			Se convierte la ruta en un tipo archivo con la clase File de java.io
+				ej. File archivoNombre = rutaARchivo.toFile();
+			Se pregunta si el archivo existe y se elimina con el metodo delete
+				ej. archivoNombre.delete();
+		12. Se carga el dato en la base de datos 
+			Ya sea solo el nombre del archivo en caso de haber guardado el archivo en otro lado
+			ej. cliente.setFoto(nombreArchivo);
+			O el archivo en caso de querer guardar el archivo dentro de la base de datos
+			cliente setFoto(archivo);
+		13. Se guarda el archivo, se guardan los cambios
+			ej. clienteService.save(cliente);
+				PARA MOSTRAR LOS ARCHIVOS
+		14. Se crea un nuevo metodo que regrese un ResponseEntity<Resource>
+		15. Se coloca la anotacion  @GetMapping con un pathVariable y que aparte este path tendra una extencion como png, pdf, etc
+			ej. @GetMapping("/uploads/img/{nombreFoto:.+}")
+		16. Se coloca un parametro con la anotacion @PathVariable
+			 ej. @PathVariable String nombreFoto
+		17. Se crea la ruta del archivo con la clase Path como se hizo anteriormente
+		18. Se crea una variable Resource y se inizializa en null
+		19. Se obtiene el recurso con ayuda de la clase UrlResource de springframework.core.io, se rodea tambien de un trycatch
+			ej. recurso = new UrlResource(rutaArchivo.toUri());
+		20. Se debe preguntar si el archivo existe y es leible con los metodo exist() y isReadable()
+			En caso de no se leible se puede enviar una excepcion
+			o se establecer un nuevo path para apuntar a una imagen generica que tengamos
+			y se vuelve a establecer el UrlResource rodeado de un trycatch
+		21. Se crea unas cabeceras  con la clase HttpHeaders para que en caso de que no se pueda cargar la imagen, se muestre algo
+			ej. HttpHeaders cabecera = new HttpHeaders();
+			cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename= \"" + recurso.getFilename() + "\"")
+		22. Se hace return del ResponseEntity<resource> junto con las cabeceras
+
+
+
+			EN ARCHIVO APPLICATION.PROPERTIES
+		12. Se configura el tamano de archivo que se puede recibir
+			Se coloca la configuracion spring.servlet.multipart.max-file-size = (Tamano, ej 10MB)
+			Tambien se coloca la configuracion spring.servlet.multipart.max-request-size = (Tamano, ej 10MB)

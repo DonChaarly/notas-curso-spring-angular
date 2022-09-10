@@ -1,0 +1,64 @@
+
+
+
+				ANOTACINONES EN SPRING
+
+---------------------------------SPRING BOOT --------------------------------------------------------------------------------------
+
+		EN CLASE PRINCIPAL DE SPRING
+	@SpringBootApplication: Es la anotacion mas importante, se coloca en la clase principal del proyecto Spring
+		conformada por las anotaciones:
+			@SpringBootConfiguration: Hace referencia a la configuracion de SpringBoot 
+			@EnableAutoConfiguration: Habilita la configuracion de Spring (modifacion de conf. en archivo application.properties)
+			@ComponentScan: Busca y registra todas las clases con anotaciones: @RestControler, @Controller, @Component, @Repository, @Service
+
+		EN CLASES DE SERVICIO
+	@Service: Se coloca en las implementaciones de las clases de servicio para que spring lo reconozca como tal
+	@Autowire: Nos facilita la inyeccion de clases o interfaces
+	@Transactinoal(): Se especifica de que tipo es el metodo, de solo lectura o tambien de escritura
+
+
+		EN CLASES CONTROLADORAS
+	@RestController: Notifica a spring que el controllador es un controlador de tipo rest
+	@RequestMapping: Se especifica el url con el que se va a llamar a este controlador
+	@Autowire: Nos facilita la inyeccion de clases o interfaces
+	@GetMapping(): Se especifica el url con el cual se llamara al metodo del controlador
+	@CrossOrigin(): Se indica el CORS (para permitir enviar y recibir datos desde un dominio a otro) que el controlador permitira 
+	@PathVariable: Se coloca en el parametro del metodo para indicar a que parametro hara referencia la variable marcada en el uri
+	@RequestBody: Se coloca en el parametro del metotodo para indicar que este parametro es un tipo json dentro del cuerpo de la peticion  
+	@ResponseStatus(): Se coloca a un metodo para que cuando se ejecute, se mande un codigo de estatus como 200, 201, 403, etc
+					   Si no se coloca este decorador y si todo sale bien se manda el codigo 200 por default
+	@RequestParam("(nombreParametro") MultipartFile: Esta anotacion se coloca al parametro de un metodo para poder recibir archivos como fotos
+
+
+---------------------------------JAVAX PERSISTENCE --------------------------------------------------------------------------------------
+	
+		EN CLASES DE ENTIDAD
+		para la tabla:
+	@Entity: Se marca a la clase como una clase de entidad
+	@Table(name = "(nombreTablaEnDB"): Para especificar el nombre de la tabla en la base de datos
+		para los atributos 
+	@Id: Marcar atributo como id en la base de datos
+	@GeneratedValue(strategy = GenerationType.IDENTITY): Se le coloca al atibuto que sera el id
+	@Column(name = "(nombreColumnaEnDB"): Para especificar enl nombre de la columna en la base de datos
+	@Column(nullable = false): Para especificar que el campo no puede ser null
+	@Column(unique = true): para especificar que el campo no puede repertirse
+	@Column(leng = (largo)): Para especificar el largo de la columna
+	@Temporal((tipoDeDatoTemporal)): Para especifical el tipo date que se utilizara en la base de datos para el atributo
+	@NotNull: Para especificar que el atributo no puede ser null
+	@Size (min =(valor), max = (valor)): Para especificar el tamano del atributo
+	@Basic(optional = false): Para eviatar que sea null, si lo es mandara un error
+	@PrePersist: Se le coloca a un metodo para indicar que este metodo se ejeuctara antes de que se persista un objeto
+
+
+----------------------------- JAVAX VALIDATIONS ----------------------------------------------------------------------------------------
+
+		EN CLASE DE ENTIDAD
+		Para los atributos
+	@NotEmpty: Indica que el campo no puede ser vacio
+	@Size(min = , max = ): Indica el min y maximo de caracteres del campo 
+
+
+		EN CLASES CONTROLADORAS
+	@Valid: Se agrega a los parametros de los metodos que se validaran con lo establecido en las clases de entidad
+

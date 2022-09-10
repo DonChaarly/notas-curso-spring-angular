@@ -1,0 +1,14 @@
+
+
+
+		RELACION ENTRE ENTIDADES EN EL FRONTEND
+
+	No se necesita nada especial, solo lo del inicio, hacer las clases, sus clases service, etc.
+	
+
+
+	1. Se crean las clases modelo de las nuevas entidades
+	2. Se agrean los atributos necearios a las clases que hacen referencia a otras clases
+
+		EN CLASES SERVICE
+	3. Se crean las clases service y todo lo que ellas necesiten

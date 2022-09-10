@@ -1,0 +1,100 @@
+
+
+
+			GENERACION DE PROYECTO SPRING
+
+	1. Se crea un proyecto spring en new ->other ->SpringBoot->Spring Starter Project
+	2. Se coloca los datos del proyecto
+	3. Se seleccionand las dependencias que se van a utilizar
+		Selecionamos las siguientes
+			Spring Web
+			WebSocket
+			Spring Boot DevTools
+			Spring Data MongoDb
+
+
+			MODIFICACIONES PRINCIPALES DEL PROYECTO
+
+	4. En archivo pom.xml se comenta la dependencia de mongoDb hasta que tenamos instalado y configurado mongoDb
+		Cuando ya tenemos instalado mongoDB vamos al archivos properties y configuramos la conexion con las siguientes lineas
+		spring.data.mongodb.uri=mongodb://(dominio):(puerto)/(nombreBaseDEDATos)
+		logging.level.org.springframeworkdata.mongodb.core.MongoTemplate=debug
+
+
+			CLASE WEB SOCKET CONFIG
+	5. Se crea una clase llamada WebSocketConfig a nivel de la clase Application.java
+	6. Se agrega a la clase la anotacion de @Configuration y @EnableWebSocketMessageBroker
+		Configuration para que spring sepa que es una clase de configuracion
+		WebSocket para que spring habilite el servidor o broker
+	7. Implementamos la interfaz WebSocketMessageBrokerConfigurer
+	8. La clase tendra el siguiente codigo
+			//Este metodo configura las rutas de los clientes que podran conectarse al servidor
+			@Override
+			public void registerStompEndpoints(StompEndpointRegistry registry) {
+				
+				//Con addEnpoint se especifica una ruta URL con la que el cliente se conectara al servidor
+				//Con setAllowedOriginPatterns se especifica la ruta del cliente al que se le permitira conectarse al servidor
+				//withSockJs nos permie utilizar el protocolo http para conectarnos al servidor de webSocket
+				registry.addEndpoint("/chat-websocket")
+				.setAllowedOriginPatterns("http://localhost:4200")
+				.withSockJS();
+			}
+
+			@Override
+			public void configureMessageBroker(MessageBrokerRegistry registry) {
+				//Con enableSimpleBroker se especifica el nombre del evento que causara el servidor al emitir un mensaje, este tiene que ser chat
+				//los clientes se podran suscribir a este evento
+				registry.enableSimpleBroker("/chat/");
+				//Con setApplicationDestinationPrefixes se especifica el nombre de destino al que el cliente enviara mensajes
+				registry.setApplicationDestinationPrefixes("/app");
+			
+			}
+
+
+			CLASES ENTITY
+	9. Se crea el package models.entitys dentro del package principal
+	10. Se crea la clase entity Mensaje
+	11. Se definen los atributos de la clase y los getter and setter
+
+
+
+			CLASE CONTROLADORA
+	12. Se cre el package controller dentro del package principal
+	13. Se crea una clase controladora llamada chatController o como se quiera llamar
+	14. Se agrega a la clase la anotacion de @Controller
+	15. Se agregan los metodos los cuales recibiran los mensajes, para esto se le coloca la anotacion @MessageMapping("/(prefijoDeDestion)")
+		Dentro se coloca el prefijo al que el cliente va a enviar los mensajes, no es necesario colocar el prefijo que se configuro en la clase WebSocketConfig
+		Este metodo puede procesar lo recibido y despues notificar a los demas clientes
+		y retornar un tipo de dato como un entity
+		Este mismo metodo puede ser capaz de enviar informacion al cliente tambien
+		ej
+			@MessageMapping("/mensaje")
+			public Mensaje recibirMensaje(Mensaje mensaje) {
+				
+				return mensaje;
+			}
+
+	16. Se coloca la anotacion @SentTo("/chat/(nombreDeEvento)") a los metodos que enviaran informacion a los clientes
+		Se tiene que colocar el prefijo que se especifico en la clase WebSocketConfig
+		Con esto se crea el evento al que despues los clientes se pueden suscribir para procesar la informacion recibida
+		ej. 
+			@MessageMapping("/mensaje")
+			@SentTo("/chat/mensaje")
+			public Mensaje recibirMensaje(Mensaje mensaje) {
+				
+				return mensaje;
+			}
+	17. Se crea una instancia de la clase SimpMessagingTemplate
+		Esta clase nos permitira hacer lo mismo que el @SentoTo pero a este se le podra colocar parametros para enviar
+		ej.
+			@Autowired
+			private SimpMessagingTemplate webSocket;
+	18. Se pueden colocar parametros a los metodos	para recibir un identificador, y tambien enviar este mismo
+		Estos para que cada usuario tenga un evento unico al que suscribirse
+		En vez de colocar una anotacion @SentTo (a esta no se le peude colocar parametros)
+		Se coloca webSocket.convertAndSend("(/nombreDelEvento/)"+(parametro), (Objeto a enviar));
+		ej.
+			@MessageMapping("/historial")
+			public void historial(String clienteId) {
+				webSocket.convertAndSend("/chat/historial/"+clienteId, chatService.obtenerUltimos10Mensajes());
+			}

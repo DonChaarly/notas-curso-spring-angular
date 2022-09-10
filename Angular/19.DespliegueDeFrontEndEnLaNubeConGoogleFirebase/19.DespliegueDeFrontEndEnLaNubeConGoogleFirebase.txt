@@ -1,0 +1,62 @@
+
+
+
+						DESPLIEGUE DE FRONT END EN GOOGLE FIREBASE
+
+			
+			PREPARACIONES EN PROYECTO ANGULAR
+
+		EN PROYECTO ANGULAR
+	1. Dentro de la carpeta app creamos un carpeta llamada config
+	2. Dentro de la carpeta config creamos el archivo llamado config.ts
+	3. Agregamos el siguente codigo al archivo
+		export const URL_BACKEND = '(ruta en dode se encuentra despleguado nuestro servidor)'
+	4. En archivos service que hagan llamadas al backend se importa la variable URL_BACKEND
+		Esto se hace en cuealquier archivo que utilice esa cadena
+		ej import {URL_BACKEND} from '../config/config';
+	5. Se cambia el valor de la variable urlEndPoint que tengamos en la clase service con la nueva variable
+		ej. private urlEndPoint: string = URL_BACKEND + '/api/clientes';
+
+
+
+			GENERACION DE PROYECTO
+
+		
+	6. En la terminal construimos el proyecto con el comando: ng build --prod
+	7. Cerramos el proyecto de visualStudio y abrimos ahora la carpeta dist que se creo
+	8. Dentro de dist creamos la carpeta llamada public
+	9. Colocamos todas las carpeta y archivos de la aplicacion dentro de la carpeta public
+	
+
+			CREACION DE APLICACION FIREBASE
+
+	10. En la pagina de firebase creamos una cuenta
+
+
+			EN TERMINAL EN CARPETA DE PROYECTO
+	11. Instalamos el CLI de firebase con el comando: npm install -g firebase-tools
+	12. iniciamos session en firebase con el comando: firebase login
+	13. Probablemente nos rediriga a la pagin de firebase en la cual iniciaremos sesion
+	14. Nos dirigimos a la carpea dist con el comando: cd dist
+	15. Creams el repositorio de firebase con el comando: firebase init
+	16. Comenzara a lanzar preguntas
+		como si estamos listos para proceder
+		El tipo de aplicacion que vamos a desplegar, para angular seleccionaremos hosting con las flechas y barra espacio
+		Si se crea un nuevo proyecto, seleccionamos [create a new project]
+		Si utilizaremose l directorio public, le damos enter
+		Si se esta configurando un single page application
+		Si queremos sobreescribir. le damos que no si ya tenemos el archivo public/index.html
+	17. Nos saldra un url para ir a crear un nuevo proyecto
+	18. Le damos el addProject
+		Colocamos el nombre del proyecto, el que queramos
+		Aceptamos la licencia y creamos el proyecto
+	19. Nuevamente en la termninal asociamos el proyecto con el comando: firebase use --add
+	20. Pregunta por el nombre del proyecto y nos dara a elegir el que acabamos de crear, damos enter
+	21. Le podemos colocar un alias 
+	22. Finalmente realizamos el deploy con el comando: firebase deploy
+	23. Nos dara la ruta en la que estara nuestro proyecto
+
+
+
+
+

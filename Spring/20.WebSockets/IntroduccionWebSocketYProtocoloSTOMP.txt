@@ -1,0 +1,52 @@
+
+
+				PROTOCOLO STOMP (Protocolo de mensajeria Orientado a Texto Simple)
+
+	Los WebSockets nos permite enviar y recibir informacion en tiempo real la cual se puede ver reflejada en todos los clientes que esten 
+	conectados al servidor, el ejemplo mas claro es una apliacion de mensajeria en la cual se envian mensajes los cuales se ven reflejados en todos los clientes al mismo tiempo sin necesidad de actualizar la pagina
+	Es un protocolo orientado a una comunicacion asincrona entre clientes y a traves de un intermediario de mensajes
+	el cual seria el servidor conocido como agente, el cual basicamente trabaja con topicos y colas de mensajeria
+	STOMP propone un protocolo sencillo el cual nos dice a detalle como se implementa, con un conjunto de metodos y operaciones
+	que el api de mensajeria en este caso SocketJS tiene que implementar
+	STOMP trabaja por debajo con WebSockets
+	Sigue los siguientes pasos
+		Connet: Se establece una conexion con el servidor
+		Subscribe: El cliente se suscribe a un evento
+		Unsubscribe: el cliente se desuscribe
+		Send o publish:El cliente que esta suscrito envia un mensaje a un destino
+		Disconnect: Se desconecta par cerrar sesion con el agente de mensajeria
+
+
+		PRINCIPALES HERRAMIENTAS POR PARTE DEL CLIENTE
+
+	Conexion y desconexion:
+		Estos metodos escuchan cuando nos conectamos y desconecatmos del servidor:
+			.onConnect = frame =>{...}
+			.onDisconnect = frame =>{...}
+	Suscripcion a los metodos:
+		Se escucha eventos cuando llega un nuevo mensaje:
+			.suscribe('/chat/enviar-mensjae', e =>{...})
+			.suscribe('/chat/recibir-historial', e =>{...})
+			.suscribe('/chat/esta-escribiendo', e =>{...})
+
+	Envio de mensjaes:
+		Se envia un nuevo mensaje al broker (servidor), este lo procesa y lo envia a los demas clientes
+			.publish({
+				destination: '/app/mensjae',
+				body: JSON.strigify(mensaje)
+			});
+
+
+		PRINCIPALES HERRAMIENTAS POR PARTE DEL SERVIDOR
+
+	Escuchar eventos:
+		Se escuchan eventos cuando llega un nuevo mensaje:
+			@MessageMapping("app/mensaje") //Se especifica el mapping de destino
+			public void recibirMensaje(Mensaje mensaje){...}
+	Notificar o emitir evento
+		Cuando queremos notificar o emitir un mensaje a los clientes suscritos
+			@SentTo("chat/enviar-mensaje")//Se especifica el nombre del evento a emitir
+			public Mensaje recibirMensaje(Mensaje mensaje {
+				...
+				return mensaje;
+			}

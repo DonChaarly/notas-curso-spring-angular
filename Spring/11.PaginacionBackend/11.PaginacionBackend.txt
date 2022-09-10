@@ -1,0 +1,37 @@
+
+
+
+				PAGINACION EN EL BACKEND	
+		Con esto se especifica un rango de registros de la base de datos que se van a enviar desde el backend
+		Con Spring esto se puede hacer mdiante la interface de JPA PagingAndStorignRepository
+		La cual hereda de CrudRepository, asi que se pudiera cambiar esta sin presentar cambios ya que se heredan todos sus metodos
+		Tambien se puede utilizar la interface JpaRepository la cual es una subInterface de PaginAndStoringRepository
+
+
+
+
+			EN CLASE DAO
+			Para la definicion de la clase
+		1. Se implementa la clase JpaRepository<(clase), Long>
+			Esta interface nos permite implementar la paginacion
+			Especificando el numero de registros que se enviaran
+
+
+			EN INTERFACE SERVICE
+			En los metodos
+		2. Se agregan metodos con parametro Pageable y que retornen un objeto Page
+			Estos metodos deberan recibir como parametro un objeto Pageble
+			El cual indicara el numero de pagina y numero de registros que se enviaran
+			Tambien retornaara un objeto Page
+
+			EN LA IMPLEMENTACION DEL SERVICE
+		3. Se agrega la implementacion del metodo que retorna un objeto Page
+			en el return se hace uso del metodo findAll(pageable) que implementa la clase dao
+
+			EN EL CONTROLADOR
+		4. Se hace uso del metodo que implementa la paginacion en la interface service
+			Por ejemplo en el caso del metodo findAll(pageable) de la clase service
+			Este se puede utilizar en el metodo index() del controlador
+			Con la clase PageRequest se puede crear un objeto Pegable
+			Con el metodo .of((pagina), (no.Registros)) se indica la pagina y el numero de registros que se pueden enviar
+			

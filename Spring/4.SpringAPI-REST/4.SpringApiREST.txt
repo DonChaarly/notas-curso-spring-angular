@@ -1,0 +1,64 @@
+
+
+------------------------------------ ELEMENTOS EN UN API REST -------------------------------------------------------
+
+	REST: Representational State Transfer (Transferencia de estado Representacional)
+				  Protocolo entre cliente servidor stateless(sin estado)
+
+	Se puede: Enviar datos desde el backend
+			  Recibir Datos desde el FrontEnd a traves de una URI o URL
+			  Realizar operaciones CRUD
+
+	Clases de entidad: Son todas las clases que representan una columna de la base de datos
+					   Son los objetos que se estaran manejando despues
+					   Se les coloca anotaciones para marcarlas como clases de entidad
+					   Se les coloca anotaciones a los atributos
+					   Se suelen almacenar en una carpeta model.entity
+
+    Repositorios o clases DAO: Data Acces Object
+    						   Spring tiene una interface que se puede heredar con la cual se nos ahorra tener que crear todos los metodos tipicos del CRUD
+    						   Esta interface es 	CrudRepository<(entidad), Long>
+    						   Son las encargadas de acceder, realizar consultas y operacines en la base de datos
+    						   para un tipo de objeto/columna en especifico
+    						   Se suelen almacenar en una carpeta model.dao
+    						   Se pueden agregar metodos personalizados haciendo consultas personalizada a la base de datos
+    						   ya sea con la anotacion @Query("")
+    						   	ej. @Query("select u from Usuario u where u.username=?")
+    						   		public Usuario encontrarUsuarioPorNombre(String username);
+    						   o desde el nombre del metodo
+    						   	ej. public Usuario findByUsername(String username);
+
+
+    Clases de servicio o Service: Hacen operaciones parecidas a las de la clase DAO pero estas pueden contener a mas de un DAO
+    							  Osea en una clase de servicio se ejeucan acciones que pueden modificar mas de una columna de la base de datos
+    							  Y todo esto bajo una misma transaccion
+    							  Se suelen almacenar en una carpeta model.services
+
+    Clases controladoras: Estas clases son las que realmente aplican el protocolo REST
+    					  Se marcan con las anotaciones @RestController
+    					  Se coloca la anotacion @CrossOrigin para especificar el CORS que el controlador permitira
+    					  Se les coloca la anotacion @RequestMapping() para indicar el uri con el que se van a mandar llamar
+    					  Se les coloca la anotacion @GetMapping a los metodos para especificar el uri con el que se van a mandar llamar mediante metodo GET
+    					  Se les coloca la anotacion @PostMapping a los metodos para especificar el uri con el que se van a mandar llamar mediante metodo POST
+    					  Se les coloca la anotacin @PathVariable al parametro de un metodo que hace referencia a una variable en el uri indicado
+
+
+
+
+  -------------------------------------- CORS EN UN API REST ------------------------------------------------------
+
+  	CORS: Cross-Origin Resource Sharing (Intercambio de recursos de origen cruzado)
+  		  Permite a los navegadores enviar y recibir datos restringidos desde un dominio a otro diferente
+  		  Osea desde un cliente a un backend
+
+  	Pasos que sigue el cors
+  		1. Prefilight request: Se envia un prerequest indicando el recurso al que se quiere acceder
+  		2. Prefilight response: Se responde con un preresponse los metodos a los que se puede acceder	
+  		3. Request: Se envia una peticion hacia un recurso del backend
+  		4. Response: Se response con el recurso siempre y cuando se tenga acceso
+
+  	En el controlador se coloca el decorador @CrossOrigin(), se puede colocar mas de un valor
+  	Si no se especifican valores, se esta diciendo que todo esta disponible
+  	origins = ..: Se especifica el url de los clientes que pueden enviar y recibir informacion del controladorj
+  	methods = ...: Se especifica los metodos a los que el cliente tiene acceso
+  	allowedHeaders = ..: Se especifican las cabeceras permitidas

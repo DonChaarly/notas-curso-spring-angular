@@ -1,0 +1,59 @@
+
+
+------------------------------ ASPECTOS BASICOS --------------------------------------------------------
+		CREAR UN NUEVO PROYECTO DESDE EL CLI
+
+	crear un nuevo proyecto desde el cli
+		ng new (nombre del proyecto)
+	Se pregutna si se quiere utilizar routing
+	Se pregunta que tipo de archivos de estilo utlizaremos
+
+		LANZAR UN PROYECTO
+
+	Lanzar un proyecto con la consola CLI 
+		ng serve -o
+
+
+
+-----------------------------------PARTES DEL PROYECTO ANGULAR -----------------------------------------------------------------
+
+	Carpeta e2e: Contiene todo lo necesario para realizar las pruebas
+	Carpeta node_modules: Estan todas las librerias y dependencias del proyecto, todo su contenido se registra tambien en el package.json
+	Carpeta SRC: Es la carptea mas importante, contiene todo el codigo de la aplicacion
+	Carpeta APP: Esta carpeta contiene el componente principal
+	Componentes: Son las partes pricipales de la aplicacion
+				Dentro tiene diferentes tipos de archivos 
+				como html, css, typescript
+				En el archivo typescript
+		Archivo typescripts: 
+					Decorador @Component: Dentro se establecen las configuraciones del component
+							el selector es el nombre con el que se podra llamar al componente
+							templateUrl: Es el archivo html que estara asociado al componente
+							styleUrl: Es el archivo css que eratar asociado al componente
+	Archivo .editorconfig: Contiene la configuracion del editor, como el charset
+	Archivo gitignore: Es un archivo de github, este archivo nos permite omitir o ocultar archivos o carpeta que no queramos compartir en el repositorio github
+	Archivo angular.json: Es el archivo principal de configuracin del proyecto
+		projects: Aparece el nombre del proyecto con su configuracion, como la carpeta raiz del proyecto
+	Archivo package.json: Contiene el nombre de la aplicacion la version, scripts como atajos para ejeuctar comandos 
+						dependencies: Son todas las dependencias para produccion, todo para ejeuctar nuestra aplicacion
+						devDependencies: Son todas las dependencias relacionadas con el ambiente de desarrollo, estas dependencias no se incluyen al construir el codigo
+	Archivo tsconfig.json: Este archivo nos ayuda con las alertas, si se esta utilizando bien el codigo, tambien se puede activar aqui compilacion automatica
+	Archivo tslink.json: Se encarga de detectar los errores de sintaxys
+
+			CARPETA SRC
+	Carpeta APP: Es el componente principal
+				archivo app.module.ts: es un repositorio donde se registran los componentes, modulos clases de servicio
+	Carpeta assets: Aqui se colocan todos los archivos estaticos como fotos, etc
+	
+
+
+
+
+
+----------------------------- COMPONENTES ------------------------------------------------------------
+
+Los componentes son bloques que conforman nuestra aplicacion
+Realmente son clases de typescript los cules los cuales estan asociados a plantillas 
+Los componentes son asincronos, osea que cada componente es independiente del resto, no espera a los demas
+
+

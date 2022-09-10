@@ -1,0 +1,47 @@
+
+
+
+
+
+			MANEJO DE ERRORES CON OBSERVABLE
+	Debido a que el backend puede enviar una serie de codigos de estado
+	En caso de enviar codigos relacionados con errores, se puede procesar estos errores
+	por parte del front end
+	Para esto hacemos uso del operador catchError de los observables por parte de la libreria rxjs
+
+
+		EN LAS CLASES SERVICE
+	1. Se importa de la libreria rxjs/operators el operador catchError
+		import {catchError} from 'rxjs/operators';
+	2. Se importa el modulo throwError de la libreria rxjs (OPCIONAL)
+		Este modulo nos permite lanzar expeciones a la consola
+		import {throwError} from 'rxjs';
+	3. Se agrega el operador catchError con ayuda del metodo pipe que nos permite agregar operadores
+		Este operador estara a la escucha de errores y en caso de que se produzca un error se ejecutar el codigo que le coloquemos
+		ej. 
+			return this.http.get<Cliente>('${this.url}/${id}').pipe(
+				catchError(e => {
+					console.error(e.error.mensaje)
+					return throwError(e);
+				})
+			);
+	4. Preguntar codigo de status
+		Se puede preguntar el codigo de estatus del error par ejecutar un codigo u otro
+		ej. 
+			if(e.status == 400){
+
+			}
+
+	
+		EN COMPONENT.TS
+	5. Implementar err en el suscribe
+		Se puede agregar un lambda que se encargue de los errores
+		Y ejecute un codigo haciendo uso de los errores que se obtengan 
+		ej.
+			this.clienteService.create(this.cliente).suscribe(
+				err => {
+					this.errors = err.error.errors as string[];
+					consol.log('Codigo de estado' + err.status);
+					consol.log(err.error.errors);
+				}
+			);
